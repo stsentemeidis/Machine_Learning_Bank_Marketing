@@ -11,41 +11,41 @@ options(warn = 0) # -1 to hide the warnings
 # Install Necessary Packages ----
 source('scripts/install_packages.R')
 
-# # Read and Prepare Dataset ----
-# source('scripts/read_dataset.R')
-# 
+# Read and Prepare Dataset ----
+source('scripts/read_preprocess_data.R')
+
 # # Exploratory Data Analysis ----
 # source('scripts/eda.R')
-# 
+#
 # # Parameters of Baseline ----
 # source('scripts/param_baseline.R')
-# 
+#
 # # Baseline Linear Regression ----
 # calculate <- FALSE
 # source('scripts/model_baseline_lm.R')
-# 
+#
 # # Feature Engineering Renovation ----
 # source('scripts/feateng_renovation.R')
-# 
+#
 # # XGBoost Feature Engineering ----
 # calculate <- FALSE
 # source('scripts/model_xgb_FE.R')
-# 
+#
 # # Feature Selection Lasso ----
 # source('scripts/featsel_lasso.R')
-# 
+#
 # # Feature Selection RFE ----
 # calculate <- FALSE
 # source('scripts/featsel_rfe.R')
-# 
+#
 # # XGBoost Post RFE ----
 # calculate <- FALSE
 # source('scripts/model_xgb_rfe.R')
-# 
+#
 # # XGBoost Tuning ----
 # calculate <- FALSE
 # source('scripts/model_tuning_xgb.R')
-# 
+#
 # # Save RData for RMarkdown ----
 # save(
 #   list = c(
@@ -86,7 +86,7 @@ source('scripts/install_packages.R')
 #   ),
 #   file = 'data_output/RMarkdown_Objects.RData'
 # )
-# 
+#
 # save.image(file = 'data_output/ALL.RData')
 
 print(paste0('[', round(
@@ -115,9 +115,9 @@ print(paste0('[', round(
 # )
 # # invisible(rmarkdown::run('Bank-Marketing-Report.Rmd'))
 
-beep(8)
-
-print(paste0('[', round(
-  difftime(Sys.time(), start_time, units = 'mins'), 1
-), 'm]: ',
-'Report generated! ---END---'))
+# beep(8)
+#
+# print(paste0('[', round(
+#   difftime(Sys.time(), start_time, units = 'mins'), 1
+# ), 'm]: ',
+# 'Report generated! ---END---'))
