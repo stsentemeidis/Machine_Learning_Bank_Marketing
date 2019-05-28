@@ -11,7 +11,7 @@ test$y <- "no"
 
 all <- rbind(train, test)
 
-changeval <- c("y", "default", "housing", "loan")
+#changeval <- c("y", "default", "housing", "loan")
 
 
 
@@ -30,7 +30,5 @@ all$housing = ifelse(all$housing == "yes", 1, 0) #yes = 1, no = 0
 
 all$loan = ifelse(all$loan == "yes", 1, 0) #yes = 1, no = 0
 
-summary(all)
-
-write.csv(all, "data_output/all_0_1.csv")
+saveRDS(all, "data_output/bank_prep.rds")
 
