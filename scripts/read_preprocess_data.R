@@ -5,10 +5,30 @@ View(test)
 View(train)
 
 sum(is.na(train))
+sum(is.na(test))
 
-str(train)
-
-test$y <- NA
+test$y <- "no"
 
 all <- rbind(train, test)
-str(all)
+
+#changeval <- c("y", "default", "housing", "loan")
+
+
+
+#for (i in changeval) {
+
+#  (all[all$i, i] == 'yes' = 1)
+#  (all[all[,i],i]  == 'no' = 0)
+#}
+
+
+all$y = ifelse(all$y=="yes", 1, 0) #yes = 1, no = 0
+
+all$default = ifelse(all$default == "yes", 1, 0) #yes = 1, no = 0
+
+all$housing = ifelse(all$housing == "yes", 1, 0) #yes = 1, no = 0
+
+all$loan = ifelse(all$loan == "yes", 1, 0) #yes = 1, no = 0
+
+saveRDS(all, "data_output/bank_prep.rds")
+
