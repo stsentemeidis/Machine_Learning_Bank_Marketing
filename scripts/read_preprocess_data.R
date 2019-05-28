@@ -7,8 +7,8 @@
 raw_train <- read.csv("data_input/BankCamp_train.csv")
 raw_test <- read.csv("data_input/BankCamp_test.csv")
 
-saveRDS(all, "data_output/raw_train.rds")
-saveRDS(all, "data_output/raw_test.rds")
+saveRDS(raw_train, "data_output/raw_train.rds")
+saveRDS(raw_test, "data_output/raw_test.rds")
 
 
 # Check if NAs ----
