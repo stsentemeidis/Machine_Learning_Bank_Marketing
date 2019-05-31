@@ -92,7 +92,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
                                y_true = valid_set[,target]),
              'F1 Score' = F1_Score(y_pred = get(paste0('pred_glm', suffix)),
                                    y_true = valid_set[,target]),
-             'Coefficients' = length(get(paste0('fit_glm', suffix))$finaglmodel$coefficients),
+             'Coefficients' = length(get(paste0('fit_glm', suffix))$finalModel$coefficients),
              'Train Time (min)' = round(as.numeric(get(paste0('time_fit_duration', suffix)), units = 'mins'), 1),
              'CV | Accuracy' = get_best_result(get(paste0('fit_glm', suffix)))[, 'Accuracy'],
              'CV | Kappa' = get_best_result(get(paste0('fit_glm', suffix)))[, 'Kappa'],
@@ -157,7 +157,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     'Precision' = Precision(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'Recall' = Recall(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
-    'Coefficients' = length(get(paste0('fit_glm', suffix))$finaglmodel$coefficients),
+    'Coefficients' = length(get(paste0('fit_glm', suffix))$finalModel$coefficients),
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_duration', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
   
