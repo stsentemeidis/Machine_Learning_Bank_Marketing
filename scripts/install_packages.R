@@ -29,7 +29,8 @@ packages_list <- c(
   'knitr',
   'RColorBrewer',
   'shiny',
-  'beepr'
+  'beepr',
+  'tufte'
 )
 
 for (i in packages_list) {

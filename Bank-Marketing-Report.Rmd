@@ -1,0 +1,203 @@
+---
+title: "Predicting Term Deposits"
+author: "MBD | ADVANCED R | June 2019"
+always_allow_html: yes
+output:
+  html_document:
+    theme: yeti
+  github_document: default
+params: 
+  shiny: TRUE
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Load Libraries, echo = FALSE, include = FALSE}
+source('scripts/install_packages.R')
+
+if (is.null(webshot:::find_phantom())) {
+  webshot::install_phantomjs()
+}
+```
+
+``` {r Load Prepared Data, echo = FALSE}
+load('data_output/RMarkdown_Objects.RData')
+```
+
+``` {r Plot Residuals Function, echo = FALSE}
+plot_residuals <- function (residuals, title = '') {
+  p1 <- ggplot(as.data.frame(residuals),
+               aes(x = seq_along(residuals), y = residuals)) +
+    geom_point(color = 'darkcyan', size = 0.5) +
+    theme_minimal() +
+    theme(legend.position = 'none') +
+    labs(x = 'Scatterplot', y = '')
+  
+  p2 <- ggplot(as.data.frame(residuals),
+               aes(x = residuals)) +
+    geom_histogram(fill = 'darkcyan', bins = 100) +
+    theme_minimal() +
+    theme(legend.position = 'none') +
+    labs(x = 'Histogram', y = '')
+  
+  p3 <- ggplot(as.data.frame(residuals),
+               aes(y = residuals)) +
+    geom_boxplot(color = 'darkcyan') +
+    theme_minimal() +
+    theme(legend.position = 'none') +
+    labs(x = 'Boxplot', y = '')
+  
+  p4 <- ggplot(as.data.frame(residuals),
+               aes(sample = residuals)) +
+    geom_qq(color = 'darkcyan', size = 0.5) +
+    theme_minimal() +
+    theme(legend.position = 'none') +
+    labs(x = 'QQplot', y = '')
+  
+  grobs <- list()
+  grobs[[1]] <- p1
+  grobs[[2]] <- p2
+  grobs[[3]] <- p3
+  grobs[[4]] <- p4
+  grid.arrange(
+    grobs = grobs,
+    nrow = 2,
+    ncol = 2,
+    top = ifelse(title != '', paste0('Residuals of ', title), 'Residuals')
+  )
+}
+```
+
+</br>
+
+***
+
+## Bank Marketing Dataset  
+
+The *Bank Marketing* dataset contains the **direct marketing campaigns of a Portuguese banking institution**. The original dataset can be found on [Kaggle](https://www.kaggle.com/henriqueyamahata/bank-marketing).  
+
+All the files of this project are saved in a [GitHub repository](https://github.com/ashomah/Bank-Marketing).  
+
+The dataset consists in:  
+
+* **Train Set** with 17,277 observations with 19 house features, the ID, and the price.  
+* **Test Set** with 4,320 observations with 19 house features and the ID. The `price` column will be added to the Test Set, with NAs, to ease the pre-processing stage.  
+
+This project aims to predict house prices based on their features.  
+
+</br>
+
+***
+
+## Packages  
+
+This analysis requires these R packages:  
+
+* Data Manipulation: `data.table`, `dplyr`, `tibble`, `tidyr`  
+    
+* Plotting: `corrplot`, `GGally`, `ggmap`, `ggplot2`, `grid`, `gridExtra`  
+    
+* Machine Learning: `caret`, `dbscan`, `glmnet`, `leaderCluster`, `MLmetrics`, `ranger`, `xgboost`  
+
+* Multithreading: `doMC`, `doParallel`, `factoextra`, `foreach`, `parallel`  
+
+* Reporting: `kableExtra`, `knitr`, `RColorBrewer`, `shiny`, and... `beepr`.  
+
+These packages are installed and loaded if necessary by the main script.
+
+</br>
+
+***
+ 
+## Data Preparation  
+
+The dataset is pretty clean...  
+
+</br>
+
+***
+
+## Exploratory Data Analysis  
+
+The target of this analysis is...  
+
+</br>
+
+***
+
+## Data Preparation  
+
+
+</br>
+
+***
+
+## Cross-Validation Strategy  
+
+To validate the stability of our models, we will apply a 10-fold cross-validation, repeated 3 times.  
+
+</br>
+
+***
+
+## Baseline  
+
+
+
+</br>
+
+***
+
+## Feature Engineering  
+
+
+
+</br>
+
+***
+
+## Feature Selection with Lasso and RFE  
+
+
+
+</br>
+
+***
+
+## Tuning  
+
+
+</br>
+
+***
+
+## Final Model  
+
+The best model for...  
+
+<br><br>
+
+***
+
+###### *Nayla Fakhoury | Martin Hofbauer | Andres Llerena | Francesca Manoni | Paul Jacques-Mignault | Ashley O'Mahony | Stavros Tsentemeidis*
+###### *O17 (Group G) | Master in Big Data and Business Analytics | Oct 2018 Intake | IE School of Human Sciences and Technology*
+
+***
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
