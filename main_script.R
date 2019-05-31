@@ -18,9 +18,9 @@ source('scripts/read_format_data.R')
 
 # # Exploratory Data Analysis ----
 # source('scripts/eda.R')
-#
-# # Parameters of Baseline ----
-# source('scripts/param_baseline.R')
+
+# Split and Preprocess Dataset ----
+source('scripts/split_n_preproc.R')
 #
 # # Baseline Linear Regression ----
 # calculate <- FALSE
