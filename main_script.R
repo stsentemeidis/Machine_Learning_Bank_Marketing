@@ -21,11 +21,20 @@ source('scripts/read_format_data.R')
 
 # Split and Preprocess Dataset ----
 source('scripts/split_n_preproc.R')
-#
-# # Baseline Linear Regression ----
-# calculate <- FALSE
-# source('scripts/model_baseline_lm.R')
-#
+
+# Model Pipelines ----
+source('scripts/model_glm.R')
+
+# Parameters of Baseline ----
+source('scripts/param_modeling.R')
+
+# Baseline Linear Regression ----
+pipeline_glm(target = 'y', train_set = bank_train_A,
+         valid_set = bank_train_B, test_set = bank_test,
+         trControl = fitControl, tuneGrid = NULL,
+         suffix = 'baseline', calculate = TRUE, seed = seed,
+         n_cores = detectCores()-1)
+
 # # Feature Engineering Renovation ----
 # source('scripts/feateng_renovation.R')
 #
