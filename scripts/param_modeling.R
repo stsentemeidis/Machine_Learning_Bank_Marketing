@@ -7,6 +7,8 @@ set.seed(seed)
 
 time_fit_start <- 0
 time_fit_end <- 0
+all_results <- data.frame()
+all_real_results <- data.frame()
 
 
 # Cross-Validation Settings ----

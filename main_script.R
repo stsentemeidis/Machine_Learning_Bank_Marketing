@@ -30,10 +30,17 @@ source('scripts/param_modeling.R')
 
 # Baseline Linear Regression ----
 pipeline_glm(target = 'y', train_set = bank_train_A,
-         valid_set = bank_train_B, test_set = bank_test,
-         trControl = fitControl, tuneGrid = NULL,
-         suffix = 'baseline', calculate = TRUE, seed = seed,
-         n_cores = detectCores()-1)
+             valid_set = bank_train_B, test_set = bank_test,
+             trControl = fitControl, tuneGrid = NULL,
+             suffix = 'baseline', calculate = TRUE, seed = seed,
+             n_cores = detectCores()-1)
+
+# # Baseline XGBoost ----
+# pipeline_xgbTree(target = 'y', train_set = bank_train_A,
+#                  valid_set = bank_train_B, test_set = bank_test,
+#                  trControl = fitControl, tuneGrid = NULL,
+#                  suffix = 'baseline', calculate = TRUE, seed = seed,
+#                  n_cores = detectCores()-1)
 
 # # Feature Engineering Renovation ----
 # source('scripts/feateng_renovation.R')
