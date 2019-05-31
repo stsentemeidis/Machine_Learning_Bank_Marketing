@@ -27,50 +27,6 @@ if (is.null(webshot:::find_phantom())) {
 load('data_output/RMarkdown_Objects.RData')
 ```
 
-``` {r Plot Residuals Function, echo = FALSE}
-plot_residuals <- function (residuals, title = '') {
-  p1 <- ggplot(as.data.frame(residuals),
-               aes(x = seq_along(residuals), y = residuals)) +
-    geom_point(color = 'darkcyan', size = 0.5) +
-    theme_minimal() +
-    theme(legend.position = 'none') +
-    labs(x = 'Scatterplot', y = '')
-  
-  p2 <- ggplot(as.data.frame(residuals),
-               aes(x = residuals)) +
-    geom_histogram(fill = 'darkcyan', bins = 100) +
-    theme_minimal() +
-    theme(legend.position = 'none') +
-    labs(x = 'Histogram', y = '')
-  
-  p3 <- ggplot(as.data.frame(residuals),
-               aes(y = residuals)) +
-    geom_boxplot(color = 'darkcyan') +
-    theme_minimal() +
-    theme(legend.position = 'none') +
-    labs(x = 'Boxplot', y = '')
-  
-  p4 <- ggplot(as.data.frame(residuals),
-               aes(sample = residuals)) +
-    geom_qq(color = 'darkcyan', size = 0.5) +
-    theme_minimal() +
-    theme(legend.position = 'none') +
-    labs(x = 'QQplot', y = '')
-  
-  grobs <- list()
-  grobs[[1]] <- p1
-  grobs[[2]] <- p2
-  grobs[[3]] <- p3
-  grobs[[4]] <- p4
-  grid.arrange(
-    grobs = grobs,
-    nrow = 2,
-    ncol = 2,
-    top = ifelse(title != '', paste0('Residuals of ', title), 'Residuals')
-  )
-}
-```
-
 </br>
 
 ***

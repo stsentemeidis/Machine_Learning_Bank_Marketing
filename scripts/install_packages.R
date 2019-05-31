@@ -37,16 +37,17 @@ for (i in packages_list) {
   if (!i %in% installed.packages()) {
     install.packages(i, dependencies = TRUE)
     library(i, character.only = TRUE)
-    print(paste0(i, ' has been installed'))
+    warnings(paste0(i, ' has been installed'))
   } else {
-    print(paste0(i, ' is already installed'))
+    warnings(paste0(i, ' is already installed'))
     library(i, character.only = TRUE)
   }
 }
 
-# print(paste0(
-#   '[',
-#   round(difftime(Sys.time(), start_time, units = 'mins'), 1),
-#   'm]: ',
-#   'All necessary packages installed and loaded'
-# ))
+print(paste0(
+  ifelse(exists('start_time'), paste0('[', round(
+    difftime(Sys.time(), start_time, units = 'mins'), 1
+  ),
+  'm]: '), ''),
+  'All necessary packages installed and loaded'
+))
