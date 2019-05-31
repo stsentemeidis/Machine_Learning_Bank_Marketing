@@ -24,23 +24,24 @@ source('scripts/split_n_preproc.R')
 
 # Model Pipelines ----
 source('scripts/model_glm.R')
+source('scripts/model_xgbTree.R')
 
 # Parameters of Baseline ----
 source('scripts/param_modeling.R')
 
-# Baseline Linear Regression ----
+# Baseline Logistic Regression ----
 pipeline_glm(target = 'y', train_set = bank_train_A,
              valid_set = bank_train_B, test_set = bank_test,
              trControl = fitControl, tuneGrid = NULL,
              suffix = 'baseline', calculate = TRUE, seed = seed,
              n_cores = detectCores()-1)
 
-# # Baseline XGBoost ----
-# pipeline_xgbTree(target = 'y', train_set = bank_train_A,
-#                  valid_set = bank_train_B, test_set = bank_test,
-#                  trControl = fitControl, tuneGrid = NULL,
-#                  suffix = 'baseline', calculate = TRUE, seed = seed,
-#                  n_cores = detectCores()-1)
+# Baseline XGBoost ----
+pipeline_xgbTree(target = 'y', train_set = bank_train_A,
+                 valid_set = bank_train_B, test_set = bank_test,
+                 trControl = fitControl, tuneGrid = NULL,
+                 suffix = 'baseline', calculate = TRUE, seed = seed,
+                 n_cores = detectCores()-1)
 
 # # Feature Engineering Renovation ----
 # source('scripts/feateng_renovation.R')

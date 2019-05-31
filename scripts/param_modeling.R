@@ -17,8 +17,8 @@ fitControl <-
     method = 'repeatedcv',
     number = 10,
     repeats = 3,
-    verboseIter = TRUE
-    # allowParallel = TRUE
+    verboseIter = TRUE,
+    allowParallel = TRUE
   )
 
 print(paste0(
