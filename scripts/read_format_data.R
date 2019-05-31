@@ -38,5 +38,17 @@ bank_test$default = ifelse(bank_test$default == "yes", 1, 0) #yes = 1, no = 0
 bank_test$housing = ifelse(bank_test$housing == "yes", 1, 0) #yes = 1, no = 0
 bank_test$loan    = ifelse(bank_test$loan == "yes", 1, 0) #yes = 1, no = 0
 
+bank_train$y <- as.factor(bank_train$y)
+# levels(bank_train$y) <- c('no', 'yes')
+bank_test$y <- as.factor(bank_test$y)
+levels(bank_test$y) <- levels(bank_train$y)
+
 saveRDS(bank_train, "data_output/bank_train.rds")
 saveRDS(bank_test, "data_output/bank_test.rds")
+
+
+print(paste0(
+  ifelse(exists('start_time'), paste0('[', round(
+    difftime(Sys.time(), start_time, units = 'mins'), 1
+  ), 'm]: '), ''),
+  'Datasets Loaded'))

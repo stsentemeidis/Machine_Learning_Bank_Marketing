@@ -7,12 +7,14 @@ start_time <- Sys.time()
 print(paste0('---START--- Starting at ', start_time))
 
 options(warn = 0) # -1 to hide the warnings
+seed <- 2019
+set.seed(seed)
 
 # Install Necessary Packages ----
 source('scripts/install_packages.R')
 
-# Read and Prepare Dataset ----
-source('scripts/read_preprocess_data.R')
+# Read and Format Dataset ----
+source('scripts/read_format_data.R')
 
 # # Exploratory Data Analysis ----
 # source('scripts/eda.R')
