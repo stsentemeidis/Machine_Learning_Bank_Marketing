@@ -7,6 +7,8 @@ set.seed(seed)
 
 time_fit_start <- 0
 time_fit_end <- 0
+all_results <- data.frame()
+all_real_results <- data.frame()
 
 
 # Cross-Validation Settings ----
@@ -15,8 +17,8 @@ fitControl <-
     method = 'repeatedcv',
     number = 10,
     repeats = 3,
-    verboseIter = TRUE
-    # allowParallel = TRUE
+    verboseIter = TRUE,
+    allowParallel = TRUE
   )
 
 print(paste0(
