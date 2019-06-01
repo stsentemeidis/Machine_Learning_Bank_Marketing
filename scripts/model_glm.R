@@ -20,7 +20,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     trControl <- trainControl()
   }
   
-  # Linear Regression ----
+  # Logistic Regression ----
   if (calculate == TRUE) {
     
     # Set up Multithreading
@@ -58,17 +58,17 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     stopCluster(cl)
     
     # Save model
-    assign(paste0('time_fit_duration', suffix),
+    assign(paste0('time_fit_glm', suffix),
            time_fit_end - time_fit_start, envir = .GlobalEnv)
     saveRDS(get(paste0('fit_glm', suffix)), paste0('models/fit_glm', suffix, '.rds'))
-    saveRDS(get(paste0('time_fit_duration', suffix)), paste0('models/time_fit_duration', suffix, '.rds'))
+    saveRDS(get(paste0('time_fit_glm', suffix)), paste0('models/time_fit_glm', suffix, '.rds'))
   }
   
   # Load Model
   assign(paste0('fit_glm', suffix),
          readRDS(paste0('models/fit_glm', suffix, '.rds')), envir = .GlobalEnv)
-  assign(paste0('time_fit_duration', suffix),
-         readRDS(paste0('models/time_fit_duration', suffix, '.rds')), envir = .GlobalEnv)
+  assign(paste0('time_fit_glm', suffix),
+         readRDS(paste0('models/time_fit_glm', suffix, '.rds')), envir = .GlobalEnv)
   
   # Predicting against Valid Set with transformed target
   assign(paste0('pred_glm', suffix),
@@ -93,7 +93,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
              'F1 Score' = F1_Score(y_pred = get(paste0('pred_glm', suffix)),
                                    y_true = valid_set[,target]),
              'Coefficients' = length(get(paste0('fit_glm', suffix))$finalModel$coefficients),
-             'Train Time (min)' = round(as.numeric(get(paste0('time_fit_duration', suffix)), units = 'mins'), 1),
+             'Train Time (min)' = round(as.numeric(get(paste0('time_fit_glm', suffix)), units = 'mins'), 1),
              'CV | Accuracy' = get_best_result(get(paste0('fit_glm', suffix)))[, 'Accuracy'],
              'CV | Kappa' = get_best_result(get(paste0('fit_glm', suffix)))[, 'Kappa'],
              'CV | AccuracySD' = get_best_result(get(paste0('fit_glm', suffix)))[, 'AccuracySD'],
@@ -158,7 +158,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     'Recall' = Recall(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'Coefficients' = length(get(paste0('fit_glm', suffix))$finalModel$coefficients),
-    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_duration', suffix)), units = 'mins'), 1)
+    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_glm', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
   
   # Generate all_real_results table with original target
