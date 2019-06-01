@@ -4,6 +4,7 @@
 
 packages_list <- c(
   'data.table',
+  'ggthemes',
   'dplyr',
   'tibble',
   'tidyr',
