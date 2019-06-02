@@ -3,6 +3,7 @@
 ####
 
 packages_list <- c(
+  'Amelia',
   'data.table',
   'ggthemes',
   'dplyr',
