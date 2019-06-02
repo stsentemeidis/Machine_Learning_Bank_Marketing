@@ -18,7 +18,9 @@ fitControl <-
     number = 10,
     repeats = 3,
     verboseIter = TRUE,
-    allowParallel = TRUE
+    allowParallel = TRUE,
+    classProbs = TRUE,
+    savePredictions = TRUE
   )
 
 print(paste0(

@@ -39,7 +39,7 @@ bank_test$housing = ifelse(bank_test$housing == "yes", 1, 0) #yes = 1, no = 0
 bank_test$loan    = ifelse(bank_test$loan == "yes", 1, 0) #yes = 1, no = 0
 
 bank_train$y <- as.factor(bank_train$y)
-# levels(bank_train$y) <- c('no', 'yes')
+levels(bank_train$y) <- c('No', 'Yes')
 bank_test$y <- as.factor(bank_test$y)
 levels(bank_test$y) <- levels(bank_train$y)
 

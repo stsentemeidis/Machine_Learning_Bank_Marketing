@@ -31,22 +31,22 @@ source('scripts/model_ranger.R')
 source('scripts/param_modeling.R')
 
 # Baseline Logistic Regression ----
-pipeline_glm(target = 'y', train_set = bank_train_A_proc,
-             valid_set = bank_train_B_proc, test_set = bank_test_proc,
+pipeline_glm(target = 'y', train_set = bank_train_A_proc_dum,
+             valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
              trControl = fitControl, tuneGrid = NULL,
              suffix = 'baseline', calculate = FALSE, seed = seed,
              n_cores = detectCores()-1)
 
 # Baseline XGBoost ----
-pipeline_xgbTree(target = 'y', train_set = bank_train_A_proc,
-                 valid_set = bank_train_B_proc, test_set = bank_test_proc,
+pipeline_xgbTree(target = 'y', train_set = bank_train_A_proc_dum,
+                 valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
                  trControl = fitControl, tuneGrid = NULL,
                  suffix = 'baseline', calculate = FALSE, seed = seed,
                  n_cores = detectCores()-1)
 
 # Baseline Ranger ----
-pipeline_ranger(target = 'y', train_set = bank_train_A_proc,
-                 valid_set = bank_train_B_proc, test_set = bank_test_proc,
+pipeline_ranger(target = 'y', train_set = bank_train_A_proc_dum,
+                 valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
                  trControl = fitControl, tuneGrid = NULL,
                  suffix = 'baseline', calculate = FALSE, seed = seed,
                  n_cores = detectCores()-1)
@@ -89,7 +89,7 @@ save(
   file = 'data_output/RMarkdown_Objects.RData'
 )
 
-# save.image(file = 'data_output/ALL.RData')
+save.image(file = 'data_output/ALL.RData')
 
 print(paste0('[', round(
   difftime(Sys.time(), start_time, units = 'mins'), 1
