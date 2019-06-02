@@ -31,22 +31,22 @@ source('scripts/model_ranger.R')
 source('scripts/param_modeling.R')
 
 # Baseline Logistic Regression ----
-pipeline_glm(target = 'y', train_set = bank_train_A,
-             valid_set = bank_train_B, test_set = bank_test,
+pipeline_glm(target = 'y', train_set = bank_train_A_proc,
+             valid_set = bank_train_B_proc, test_set = bank_test_proc,
              trControl = fitControl, tuneGrid = NULL,
              suffix = 'baseline', calculate = FALSE, seed = seed,
              n_cores = detectCores()-1)
 
 # Baseline XGBoost ----
-pipeline_xgbTree(target = 'y', train_set = bank_train_A,
-                 valid_set = bank_train_B, test_set = bank_test,
+pipeline_xgbTree(target = 'y', train_set = bank_train_A_proc,
+                 valid_set = bank_train_B_proc, test_set = bank_test_proc,
                  trControl = fitControl, tuneGrid = NULL,
                  suffix = 'baseline', calculate = FALSE, seed = seed,
                  n_cores = detectCores()-1)
 
 # Baseline Ranger ----
-pipeline_ranger(target = 'y', train_set = bank_train_A,
-                 valid_set = bank_train_B, test_set = bank_test,
+pipeline_ranger(target = 'y', train_set = bank_train_A_proc,
+                 valid_set = bank_train_B_proc, test_set = bank_test_proc,
                  trControl = fitControl, tuneGrid = NULL,
                  suffix = 'baseline', calculate = FALSE, seed = seed,
                  n_cores = detectCores()-1)
@@ -73,47 +73,22 @@ pipeline_ranger(target = 'y', train_set = bank_train_A,
 # calculate <- FALSE
 # source('scripts/model_tuning_xgb.R')
 #
-# # Save RData for RMarkdown ----
-# save(
-#   list = c(
-#     'raw_hp_train',
-#     'raw_hp_test',
-#     'hp_train',
-#     'hp_test',
-#     'hp_train_A',
-#     'hp_train_A_FE2',
-#     'hp_train_B',
-#     'long_lat',
-#     'houses_sold_multi_times_train',
-#     'houses_train',
-#     'houses_sold_multi_times_test',
-#     'houses_test',
-#     'all_results',
-#     'all_real_results',
-#     'varsSelected',
-#     'varsNotSelected',
-#     'dbscan_clusters_train_A',
-#     'dbscan_clusters_train_B',
-#     'cluster_plot_A',
-#     'cluster_plot_B',
-#     'hp_fit_baseline_xgb_log_all_fact',
-#     'hp_fit_baseline_ranger_log',
-#     'hp_fit_xgb_FE',
-#     'hp_fit_baseline_ranger_log_all_fact',
-#     'results_rfe',
-#     'varImp_rfe',
-#     'var_sel_rfe',
-#     'hp_train_A_rfe',
-#     'hp_train_B_rfe',
-#     'hp_test_rfe',
-#     'hp_fit_xgb_tuning',
-#     'hp_fit_ranger_tuning',
-#     'residuals_xgb_tuning',
-#     'submission_xgb_tuning_train_B'
-#   ),
-#   file = 'data_output/RMarkdown_Objects.RData'
-# )
-#
+# Save RData for RMarkdown ----
+save(
+  list = c(
+    'raw_train',
+    'raw_test',
+    'bank_train',
+    'bank_test',
+    'bank_train_A',
+    'bank_train_B',
+    'bank_test',
+    'all_results',
+    'all_real_results'
+  ),
+  file = 'data_output/RMarkdown_Objects.RData'
+)
+
 # save.image(file = 'data_output/ALL.RData')
 
 print(paste0('[', round(
@@ -121,25 +96,25 @@ print(paste0('[', round(
 ), 'm]: ',
 'All operations are over!'))
 
-# # Render RMarkdown Report ----
-# if (is.null(webshot:::find_phantom())) {
-#   webshot::install_phantomjs()
-# }
-# invisible(
-#   rmarkdown::render(
-#     'Bank-Marketing-Report.Rmd',
-#     'github_document',
-#     params = list(shiny = FALSE),
-#     runtime = 'static'
-#   )
-# )
-# invisible(
-#   rmarkdown::render(
-#     'Bank-Marketing-Report.Rmd',
-#     'html_document',
-#     params = list(shiny = FALSE)
-#   )
-# )
+# Render RMarkdown Report ----
+if (is.null(webshot:::find_phantom())) {
+  webshot::install_phantomjs()
+}
+invisible(
+  rmarkdown::render(
+    'Bank-Marketing-Report.Rmd',
+    'github_document',
+    params = list(shiny = FALSE),
+    runtime = 'static'
+  )
+)
+invisible(
+  rmarkdown::render(
+    'Bank-Marketing-Report.Rmd',
+    'html_document',
+    params = list(shiny = FALSE)
+  )
+)
 # # invisible(rmarkdown::run('Bank-Marketing-Report.Rmd'))
 
 # beep(8)

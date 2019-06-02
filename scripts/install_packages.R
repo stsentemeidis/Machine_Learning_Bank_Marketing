@@ -21,7 +21,6 @@ packages_list <- c(
   'MLmetrics',
   'ranger',
   'xgboost',
-  'doMC',
   'doParallel',
   'factoextra',
   'foreach',
@@ -31,7 +30,8 @@ packages_list <- c(
   'RColorBrewer',
   'shiny',
   'beepr',
-  'tufte'
+  'tufte',
+  'flexclust'
 )
 
 for (i in packages_list) {
