@@ -10,6 +10,7 @@ bin_features <- function(df, lst, cut_rate) {
     df[, paste0(i,'_bin')] <- .bincode(df[, i],
                                        breaks = quantile(df[, i], seq(0, 1, by = 1/cut_rate)),
                                        include.lowest = TRUE)
+    df[, i] <- NULL
   }
   return(df)
 }
