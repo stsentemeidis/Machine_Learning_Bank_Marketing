@@ -118,7 +118,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
   # TO FIX - NOT SAVING PROPERLY...
   # Save Variables Importance plot
   png(
-    paste0('plots/', ifelse(is.null(suffix), NULL, paste0(substr(suffix,2, nchar(suffix)), '_')), 'varImp.png'),
+    paste0('plots/fit_glm_', ifelse(is.null(suffix), NULL, paste0(substr(suffix,2, nchar(suffix)), '_')), 'varImp.png'),
     width = 1500,
     height = 1000
   )
