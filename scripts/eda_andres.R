@@ -4,9 +4,9 @@ BarLineColor <- "#FFFAFA"
 MissingColor <- "#FF6666"
 
 # Palette Colour
-color1 = 'black'
-color2 = 'white'
-color3 = 'azure'
+color1 = 'white'
+color2 = 'black'
+color3 = 'black'
 color4 = 'darkorchid3'
 font1 = 'Impact'
 font2 = 'Helvetica'
@@ -46,24 +46,105 @@ Amelia::missmap(bank_train[,catcols], y.labels = NULL, y.at = NULL,
 
 
 # Need to fix the way it works some parameter is missing
-for (i in numcols){
-    assign(paste0(i,'_box_plot'), ggplot(bank_train, aes_string(x=i, y=y)) +
-             geom_boxplot(fill = color4)+
-             theme_tufte(base_size = 5, ticks=F)+
-             theme(plot.margin = unit(c(10,10,10,10),'pt'),
-                   axis.title=element_blank(),
-                   axis.text = element_text(colour = color2, size = 7, family = font2),
-                   axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
-                   legend.position = 'None',
-                   plot.background = element_rect(fill = color1)))}
+# for loop still doesnt work. 
 
-age_box_plot
-balance_box_plot
-day_box_plot
-duration_box_plot
-campaign_box_plot
-pdays_box_plot
+#for (i in numcols){
+#    assign(paste0(i,'_box_plot'), ggplot(bank_train, aes(x=i, y=i, character.only = TRUE)) +
+#             geom_boxplot(fill = color4)+
+#             theme_tufte(base_size = 5, ticks=F)+
+#             theme(plot.margin = unit(c(10,10,10,10),'pt'),
+#                   axis.title=element_blank(),
+#                   axis.text = element_text(colour = color2, size = 7, family = font2),
+#                   axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+#                   legend.position = 'None',
+#                   plot.background = element_rect(fill = color1)))}
 
+#Age
+age_box_plot <- ggplot(bank_train, aes(x='age', y=age)) +
+                geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+                coord_flip()+
+                theme_tufte(base_size = 5, ticks=F)+
+                theme(plot.margin = unit(c(10,10,10,10),'pt'),
+                 axis.title=element_blank(),
+                 axis.text = element_text(colour = color2, size = 7, family = font2),
+                 axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+                 legend.position = 'None',
+                 plot.background = element_rect(fill = color1))
+
+
+#Balance
+balance_box_plot <- ggplot(bank_train, aes(x='balance', y=balance)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#Day
+day_box_plot <- ggplot(bank_train, aes(x='day', y=day)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#Duration
+duration_box_plot <- ggplot(bank_train, aes(x='duration', y=duration)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#Campaign
+campaign_box_plot <- ggplot(bank_train, aes(x='campaign', y=campaign)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#Pdays
+pdays_box_plot <- ggplot(bank_train, aes(x='pdays', y=pdays)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#age_box_plot
+#balance_box_plot
+#day_box_plot
+#duration_box_plot
+#campaign_box_plot
+#pdays_box_plot
+
+grid.arrange(age_box_plot,
+             balance_box_plot,
+             day_box_plot,
+             duration_box_plot,
+             campaign_box_plot,
+             pdays_box_plot)
 
 # 1. Need Histograms for the numerical variables
 # for (i in numcols){
@@ -150,7 +231,7 @@ grid.arrange(default_factor_plot,
              contact_factor_plot,
              month_factor_plot,
              poutcome_factor_plot,
-             y_factor_plot )
+             y_factor_plot)
 
 ###########################################################################################
 ### Bivariate Analysis: Each variable against Target (Y)
