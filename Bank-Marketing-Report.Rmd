@@ -24,7 +24,7 @@ if (is.null(webshot:::find_phantom())) {
 ```
 
 ``` {r Load Prepared Data, echo = FALSE}
-#load('data_output/RMarkdown_Objects.RData')
+load('data_output/RMarkdown_Objects.RData')
 ```
 
 </br>
