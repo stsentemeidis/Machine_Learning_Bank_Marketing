@@ -65,7 +65,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
         suffix, 2, nchar(suffix)
       )))
     ))
-    
+
     # Model Training
     time_fit_start <- Sys.time()
     assign(
@@ -178,13 +178,13 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
   ))
   colnames(submissions_valid) <- c(target)
   assign(paste0('submission_xgbTree_valid', suffix), submissions_valid, envir = .GlobalEnv)
-  
+
   assign(paste0('real_results', suffix), as.data.frame(cbind(
-    'Accuracy' = Accuracy(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, target], y_true = as.numeric(valid_dum[, c(target)])),
-    'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, target], y_true = as.numeric(valid_dum[, c(target)])),
-    'Precision' = Precision(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, target], y_true = as.numeric(valid_dum[, c(target)])),
-    'Recall' = Recall(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, target], y_true = as.numeric(valid_dum[, c(target)])),
-    'F1 Score' = F1_Score(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, target], y_true = as.numeric(valid_dum[, c(target)])),
+    'Accuracy' = Accuracy(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_dum[, c(target)])),
+    'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_dum[, c(target)])),
+    'Precision' = Precision(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_dum[, c(target)])),
+    'Recall' = Recall(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_dum[, c(target)])),
+    'F1 Score' = F1_Score(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_dum[, c(target)])),
     'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_xgbTree', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)

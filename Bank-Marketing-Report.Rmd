@@ -33,16 +33,16 @@ load('data_output/RMarkdown_Objects.RData')
 
 ## Bank Marketing Dataset  
 
-The *Bank Marketing* dataset contains the **direct marketing campaigns of a Portuguese banking institution**. The original dataset can be found on [Kaggle](https://www.kaggle.com/henriqueyamahata/bank-marketing).  
+BLABLABLAThe *Bank Marketing* dataset contains the **direct marketing campaigns of a Portuguese banking institution**. The original dataset can be found on [Kaggle](https://www.kaggle.com/henriqueyamahata/bank-marketing).  
 
 All the files of this project are saved in a [GitHub repository](https://github.com/ashomah/Bank-Marketing).  
 
 The dataset consists in:  
 
-* **Train Set** with 17,277 observations with 19 house features, the ID, and the price.  
-* **Test Set** with 4,320 observations with 19 house features and the ID. The `price` column will be added to the Test Set, with NAs, to ease the pre-processing stage.  
+* **Train Set** with `r nrow(raw_train)` observations with `r length(raw_train)-1` features and the target `y`.  
+* **Test Set** with `r nrow(raw_test)` observations with `r length(raw_test)` features. The `y` column will be added to the Test Set, with NAs, to ease the pre-processing stage.  
 
-This project aims to predict house prices based on their features.  
+This project aims to predict if a customer will subscribe to a bank term deposit, based on its features and call history.  
 
 </br>
 
@@ -50,7 +50,7 @@ This project aims to predict house prices based on their features.
 
 ## Packages  
 
-This analysis requires these R packages:  
+<span style="color:red">This analysis requires these R packages:</span>  
 
 * Data Manipulation: `data.table`, `dplyr`, `tibble`, `tidyr`  
     
