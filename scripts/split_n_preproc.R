@@ -24,7 +24,7 @@ print(paste0(
 
 # Center and Scale Train Sets and Test Set ----
 preProcValues <-
-  preProcess(bank_train_A, method = c("center", "scale"))
+  preProcess(bank_train_A, method = c("range"), rangeBounds = c(0, 1) )
 bank_train_A_proc <- predict(preProcValues, bank_train_A)
 bank_train_B_proc <- predict(preProcValues, bank_train_B)
 bank_test_proc <- predict(preProcValues, bank_test)
