@@ -94,6 +94,162 @@ The dataset is pretty clean...
 
 The target of this analysis is...  
 
+### Missings Treatment
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+bank_train_plot <- bank_train
+BarFillColor <- "#330066"
+HBarFillColor <- "#000099"
+BarLineColor <- "#FFFAFA"
+MissingColor <- "#FF6666"
+
+# Palette Colour
+color1 = 'white'
+color2 = 'black'
+color3 = 'black'
+color4 = 'darkturquoise'
+font1 = 'Impact'
+font2 = 'Helvetica'
+
+numcols <- c('age','balance','day','duration','campaign','pdays')
+missmap(bank_train_plot[,numcols], y.labels = NULL, y.at = NULL, 
+        main = 'Missing values per Numeric variable', rank.order = TRUE,
+        col = c(color3, color4)) #No missing values in Numeric variables
+
+#Numeric Variables: No missings
+
+catcols <- c("default","housing","loan","job","marital","education","contact","month","poutcome","y")
+bank_train_plot[,catcols] <- data.frame(apply(bank_train[catcols], 2, as.factor))
+missmap(bank_train[,catcols], y.labels = NULL, y.at = NULL, 
+        main = 'Missing values per Categorical variable', rank.order = TRUE,
+        col = c(color3, color4)) #No missing values in Categorical variables
+#Categorical Variables: No missings
+```
+
+### Univariate Analysis: Categorical Variables
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+for (i in catcols){
+  if (i == 'job' | i == 'month'){
+    bank_train_plot[, i] <- as.factor(bank_train_plot[,i])
+    assign(paste0(i,'_factor_plot'), ggplot(bank_train_plot, aes_string(x=i)) +
+           geom_bar(fill = color4)+
+           theme_tufte(base_size = 5, ticks=F)+
+           theme(plot.margin = unit(c(10,10,10,10),'pt'),
+                 axis.title=element_blank(),
+                 axis.text = element_text(colour = color2, size = 7, family = font2),
+                 axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+                 legend.position = 'None',
+                 plot.background = element_rect(fill = color1)))}
+  else{
+    bank_train_plot[, i] <- as.factor(bank_train_plot[,i])
+    assign(paste0(i,'_factor_plot'), ggplot(bank_train_plot, aes_string(x=i)) +
+             geom_bar(fill = color4)+
+             theme_tufte(base_size = 5, ticks=F)+
+             theme(plot.margin = unit(c(10,10,10,10),'pt'),
+                   axis.title=element_blank(),
+                   axis.text = element_text(colour = color2, size = 7, family = font2),
+                   axis.text.x = element_text(hjust = 1, size = 7, family = font2),
+                   legend.position = 'None',
+                   plot.background = element_rect(fill = color1)))
+  }
+}
+
+grid.arrange(default_factor_plot,
+             housing_factor_plot,
+             loan_factor_plot,
+             job_factor_plot,
+             marital_factor_plot,
+             education_factor_plot,
+             contact_factor_plot,
+             month_factor_plot,
+             poutcome_factor_plot,
+             y_factor_plot)
+```
+
+### Univariate Analysis: Numerical Variables
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+#Age
+age_box_plot <- ggplot(bank_train, aes(x='age', y=age)) +
+                geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+                coord_flip()+
+                theme_tufte(base_size = 5, ticks=F)+
+                theme(plot.margin = unit(c(10,10,10,10),'pt'),
+                 axis.title=element_blank(),
+                 axis.text = element_text(colour = color2, size = 7, family = font2),
+                 axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+                 legend.position = 'None',
+                 plot.background = element_rect(fill = color1))
+
+
+#Balance
+balance_box_plot <- ggplot(bank_train, aes(x='balance', y=balance)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#Day
+day_box_plot <- ggplot(bank_train, aes(x='day', y=day)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#Duration
+duration_box_plot <- ggplot(bank_train, aes(x='duration', y=duration)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#Campaign
+campaign_box_plot <- ggplot(bank_train, aes(x='campaign', y=campaign)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+#Pdays
+pdays_box_plot <- ggplot(bank_train, aes(x='pdays', y=pdays)) +
+  geom_boxplot(fill = color4, outlier.colour = color2, alpha=0.6)+
+  coord_flip()+
+  theme_tufte(base_size = 5, ticks=F)+
+  theme(plot.margin = unit(c(10,10,10,10),'pt'),
+        axis.title=element_blank(),
+        axis.text = element_text(colour = color2, size = 7, family = font2),
+        axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+        legend.position = 'None',
+        plot.background = element_rect(fill = color1))
+
+grid.arrange(age_box_plot,
+             balance_box_plot,
+             day_box_plot,
+             duration_box_plot,
+             campaign_box_plot,
+             pdays_box_plot)
+```
 
 ### Bivariate Analysis: Each Variable against Target (Y)
 
@@ -355,8 +511,8 @@ grid.text(unit(0.7, 'npc'), unit(0.9,"npc"), check.overlap = T,just = "left",
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 
-bank_train$balancebin <- cut(bank_train$balance, 10)
-mytable <- table(bank_train$balance, bank_train$y)
+bank_train$balancebin <- cut(bank_train$balance, c(-10000,0,5000,10000,100000))
+mytable <- table(bank_train$balancebin, bank_train$y)
 tab <- as.data.frame(prop.table(mytable, 2))
 colnames(tab) <-  c("balance", "y", "perc")
 

@@ -7,7 +7,7 @@ MissingColor <- "#FF6666"
 color1 = 'white'
 color2 = 'black'
 color3 = 'black'
-color4 = 'darkorchid3'
+color4 = 'darkturquoise'
 font1 = 'Impact'
 font2 = 'Helvetica'
 
