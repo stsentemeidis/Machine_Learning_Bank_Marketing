@@ -33,8 +33,9 @@ assign(paste0('silhouette_', k), readRDS(paste0('data_output/silhouette_', k, '.
 
 
 # Predicting Clusters
-bank_train_A_FE1 <- cbind(bank_train_A_proc_dum, data.frame('cluster' = predict(get(paste0('kmeans_', k)))))
-bank_train_B_FE1 <- cbind(bank_train_B_proc_dum, data.frame('cluster' = predict(get(paste0('kmeans_', k)), bank_train_B_proc_dum[,to_cluster])))
-bank_test_FE1 <- cbind(bank_test_proc_dum, data.frame('cluster' = predict(get(paste0('kmeans_', k)), bank_test_proc_dum[,to_cluster])))
+dummy_cluster <- dummyVars(formula = '~.', data = data.frame('cluster' = as.factor(predict(get(paste0('kmeans_', k))))))
+bank_train_A_FE1 <- cbind(bank_train_A_proc_dum, predict(dummy_cluster, data.frame('cluster' = as.factor(predict(get(paste0('kmeans_', k)))))))
+bank_train_B_FE1 <- cbind(bank_train_B_proc_dum, predict(dummy_cluster, data.frame('cluster' = as.factor(predict(get(paste0('kmeans_', k)), bank_train_B_proc_dum[, to_cluster])))))
+bank_test_FE1 <- cbind(bank_test_proc_dum, predict(dummy_cluster, data.frame('cluster' = as.factor(predict(get(paste0('kmeans_', k)), bank_test_proc_dum[, to_cluster])))))
 
 

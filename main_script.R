@@ -48,11 +48,11 @@ pipeline_xgbTree(target = 'y', train_set = bank_train_A_proc_dum,
 pipeline_ranger(target = 'y', train_set = bank_train_A_proc_dum,
                  valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
                  trControl = fitControl, tuneGrid = NULL,
-                 suffix = 'baseline', calculate = TRUE, seed = seed,
+                 suffix = 'baseline', calculate = FALSE, seed = seed,
                  n_cores = detectCores()-1)
 
 # Feature Engineering Clustering ----
-calculate <- FALSE
+calculate <- TRUE
 source('scripts/fe_clusters.R')
 
 # Logistic Regression Clustering ----
@@ -73,7 +73,7 @@ pipeline_xgbTree(target = 'y', train_set = bank_train_A_FE1,
 pipeline_ranger(target = 'y', train_set = bank_train_A_FE1,
                 valid_set = bank_train_B_FE1, test_set = bank_test_FE1,
                 trControl = fitControl, tuneGrid = NULL,
-                suffix = 'FE1 Clustering', calculate = TRUE, seed = seed,
+                suffix = 'FE1 Clustering', calculate = FALSE, seed = seed,
                 n_cores = detectCores()-1)
 
 # # Feature Engineering Binning ----
