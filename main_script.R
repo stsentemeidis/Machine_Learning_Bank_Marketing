@@ -48,16 +48,65 @@ pipeline_xgbTree(target = 'y', train_set = bank_train_A_proc_dum,
 pipeline_ranger(target = 'y', train_set = bank_train_A_proc_dum,
                  valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
                  trControl = fitControl, tuneGrid = NULL,
-                 suffix = 'baseline', calculate = FALSE, seed = seed,
+                 suffix = 'baseline', calculate = TRUE, seed = seed,
                  n_cores = detectCores()-1)
 
-# # Feature Engineering Renovation ----
-# source('scripts/feateng_renovation.R')
-#
-# # XGBoost Feature Engineering ----
+# Feature Engineering Clustering ----
+calculate <- FALSE
+source('scripts/fe_clusters.R')
+
+# Logistic Regression Clustering ----
+pipeline_glm(target = 'y', train_set = bank_train_A_FE1,
+             valid_set = bank_train_B_FE1, test_set = bank_test_FE1,
+             trControl = fitControl, tuneGrid = NULL,
+             suffix = 'FE1 Clustering', calculate = FALSE, seed = seed,
+             n_cores = detectCores()-1)
+
+# XGBoost Clustering ----
+pipeline_xgbTree(target = 'y', train_set = bank_train_A_FE1,
+             valid_set = bank_train_B_FE1, test_set = bank_test_FE1,
+             trControl = fitControl, tuneGrid = NULL,
+             suffix = 'FE1 Clustering', calculate = FALSE, seed = seed,
+             n_cores = detectCores()-1)
+
+# Ranger Clustering ----
+pipeline_ranger(target = 'y', train_set = bank_train_A_FE1,
+                valid_set = bank_train_B_FE1, test_set = bank_test_FE1,
+                trControl = fitControl, tuneGrid = NULL,
+                suffix = 'FE1 Clustering', calculate = TRUE, seed = seed,
+                n_cores = detectCores()-1)
+
+# # Feature Engineering Binning ----
+# source('scripts/fe_binning.R')
+# 
+# # Logistic Regression Binning ----
+# pipeline_glm(target = 'y', train_set = bank_train_A_FE2,
+#              valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
+#              trControl = fitControl, tuneGrid = NULL,
+#              suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
+#              n_cores = detectCores()-1)
+# 
+# # XGBoost Binning ----
+# pipeline_xgbTree(target = 'y', train_set = bank_train_A_FE2,
+#                  valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
+#                  trControl = fitControl, tuneGrid = NULL,
+#                  suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
+#                  n_cores = detectCores()-1)
+# 
+# # Ranger Binning ----
+# pipeline_ranger(target = 'y', train_set = bank_train_A_FE2,
+#                 valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
+#                 trControl = fitControl, tuneGrid = NULL,
+#                 suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
+#                 n_cores = detectCores()-1)
+
+# # Feature Engineering Binning ----
+# source('scripts/fe_binning.R')
+# 
+# # Logistic Regression Binning 3 ----
 # calculate <- FALSE
 # source('scripts/model_xgb_FE.R')
-#
+# 
 # # Feature Selection Lasso ----
 # source('scripts/featsel_lasso.R')
 #
@@ -84,7 +133,10 @@ save(
     'bank_train_B',
     'bank_test',
     'all_results',
-    'all_real_results'
+    'all_real_results',
+    'opt_nb_clusters',
+    'silhouette_9',
+    'kmeans_9'
   ),
   file = 'data_output/RMarkdown_Objects.RData'
 )
@@ -112,7 +164,8 @@ invisible(
   rmarkdown::render(
     'Bank-Marketing-Report.Rmd',
     'html_document',
-    params = list(shiny = FALSE)
+    params = list(shiny = TRUE),
+    output_options = list(code_folding = 'hide')
   )
 )
 # # invisible(rmarkdown::run('Bank-Marketing-Report.Rmd'))

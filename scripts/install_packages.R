@@ -32,7 +32,8 @@ packages_list <- c(
   'shiny',
   'beepr',
   'tufte',
-  'flexclust'
+  'flexclust',
+  'factoextra'
 )
 
 for (i in packages_list) {
