@@ -52,7 +52,7 @@ pipeline_ranger(target = 'y', train_set = bank_train_A_proc_dum,
                  n_cores = detectCores()-1)
 
 # Feature Engineering Clustering ----
-calculate <- TRUE
+calculate <- FALSE
 source('scripts/fe_clusters.R')
 
 # Logistic Regression Clustering ----
@@ -76,44 +76,37 @@ pipeline_ranger(target = 'y', train_set = bank_train_A_FE1,
                 suffix = 'FE1 Clustering', calculate = FALSE, seed = seed,
                 n_cores = detectCores()-1)
 
-# # Feature Engineering Binning ----
-# source('scripts/fe_binning.R')
-# 
-# # Logistic Regression Binning ----
-# pipeline_glm(target = 'y', train_set = bank_train_A_FE2,
-#              valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
-#              trControl = fitControl, tuneGrid = NULL,
-#              suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
-#              n_cores = detectCores()-1)
-# 
-# # XGBoost Binning ----
-# pipeline_xgbTree(target = 'y', train_set = bank_train_A_FE2,
-#                  valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
-#                  trControl = fitControl, tuneGrid = NULL,
-#                  suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
-#                  n_cores = detectCores()-1)
-# 
-# # Ranger Binning ----
-# pipeline_ranger(target = 'y', train_set = bank_train_A_FE2,
-#                 valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
-#                 trControl = fitControl, tuneGrid = NULL,
-#                 suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
-#                 n_cores = detectCores()-1)
+# Feature Engineering Binning ----
+source('scripts/fe_binning.R')
 
-# # Feature Engineering Binning ----
-# source('scripts/fe_binning.R')
-# 
-# # Logistic Regression Binning 3 ----
-# calculate <- FALSE
-# source('scripts/model_xgb_FE.R')
-# 
-# # Feature Selection Lasso ----
-# source('scripts/featsel_lasso.R')
-#
-# # Feature Selection RFE ----
-# calculate <- FALSE
-# source('scripts/featsel_rfe.R')
-#
+# Logistic Regression Binning ----
+pipeline_glm(target = 'y', train_set = bank_train_A_FE2,
+             valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
+             trControl = fitControl, tuneGrid = NULL,
+             suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
+             n_cores = detectCores()-1)
+
+# XGBoost Binning ----
+pipeline_xgbTree(target = 'y', train_set = bank_train_A_FE2,
+                 valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
+                 trControl = fitControl, tuneGrid = NULL,
+                 suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
+                 n_cores = detectCores()-1)
+
+# Ranger Binning ----
+pipeline_ranger(target = 'y', train_set = bank_train_A_FE2,
+                valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
+                trControl = fitControl, tuneGrid = NULL,
+                suffix = 'FE2 Binning', calculate = FALSE, seed = seed,
+                n_cores = detectCores()-1)
+
+# Feature Selection Lasso ----
+source('scripts/featsel_lasso.R')
+
+# Feature Selection RFE ----
+calculate <- TRUE
+source('scripts/featsel_rfe.R')
+
 # # XGBoost Post RFE ----
 # calculate <- FALSE
 # source('scripts/model_xgb_rfe.R')
