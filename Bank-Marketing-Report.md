@@ -57,7 +57,10 @@ These packages are installed and loaded if necessary by the main script.
 
 ## Data Preparation
 
-The dataset is pretty clean…
+The dataset is pretty
+clean…
+
+[![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-1-1.png)](http://ashomah.shinyapps.io/test)<!-- -->
 
 </br>
 
@@ -67,6 +70,55 @@ The dataset is pretty clean…
 
 The target of this analysis is…
 
+### Missings Treatment
+
+``` r
+bank_train_plot <- bank_train
+BarFillColor <- "#330066"
+HBarFillColor <- "#000099"
+BarLineColor <- "#FFFAFA"
+MissingColor <- "#FF6666"
+
+# Palette Colour
+color1 = 'white'
+color2 = 'black'
+color3 = 'black'
+color4 = 'darkturquoise'
+font1 = 'Impact'
+font2 = 'Helvetica'
+
+numcols <- c('age','balance','day','duration','campaign','pdays')
+missmap(bank_train_plot[,numcols], y.labels = NULL, y.at = NULL, 
+        main = 'Missing values per Numeric variable', rank.order = TRUE,
+        col = c(color3, color4)) #No missing values in Numeric variables
+```
+
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+``` r
+#Numeric Variables: No missings
+
+catcols <- c("default","housing","loan","job","marital","education","contact","month","poutcome","y")
+bank_train_plot[,catcols] <- data.frame(apply(bank_train[catcols], 2, as.factor))
+missmap(bank_train[,catcols], y.labels = NULL, y.at = NULL, 
+        main = 'Missing values per Categorical variable', rank.order = TRUE,
+        col = c(color3, color4)) #No missing values in Categorical variables
+```
+
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+
+``` r
+#Categorical Variables: No missings
+```
+
+### Univariate Analysis: Categorical Variables
+
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+### Univariate Analysis: Numerical Variables
+
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
 ### Bivariate Analysis: Each Variable against Target (Y)
 
 Let’start from the *Categorical Variables*
@@ -74,11 +126,11 @@ Let’start from the *Categorical Variables*
 
 #### Job
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 #### Marital status
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 Single people are more likely to open a deposit. Married people are less
 likely. Divorced
@@ -86,33 +138,33 @@ likely. Divorced
 
 #### Education
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Higher education, higher chance to open a
 deposit.
 
 #### Contact
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 People contacted via cellular are more likely to open a
 deposit.
 
 #### Month
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 #### Default
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 #### Housing
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 #### Loan
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Let’s continue with the *numerical* variables. In order to be able to
 display the relationship between the variable Target(Y) and the
@@ -122,31 +174,31 @@ read.
 
 #### Age
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 #### Balance
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 #### Day
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 #### Duration
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 #### Campaign
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 #### Pdays
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 #### Previous
 
-![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](Bank-Marketing-Report_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 </br>
 
@@ -241,31 +293,31 @@ baseline
 
 <td style="text-align:right;">
 
-0.9032213
+0.9039126
 
 </td>
 
 <td style="text-align:right;">
 
-<span style="     color: ghostwhite;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(241, 229, 29, 1);font-size: 11px;">0.9768533</span>
+<span style="     color: ghostwhite !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(241, 229, 29, 1) !important;font-size: 11px;">0.9774789</span>
 
 </td>
 
 <td style="text-align:right;">
 
-0.9187996
+0.9189825
 
 </td>
 
 <td style="text-align:right;">
 
-0.9768533
+0.9774789
 
 </td>
 
 <td style="text-align:right;">
 
-0.9469375
+0.9473285
 
 </td>
 
@@ -277,7 +329,7 @@ baseline
 
 <td style="text-align:right;">
 
-0.4
+0.5
 
 </td>
 
@@ -294,31 +346,31 @@ baseline
 
 <td style="text-align:right;">
 
-0.9091663
+0.9144200
 
 </td>
 
 <td style="text-align:right;">
 
-<span style="     color: ghostwhite;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(87, 198, 102, 1);font-size: 11px;">0.9685643</span>
+<span style="     color: ghostwhite !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(87, 198, 102, 1) !important;font-size: 11px;">0.9684079</span>
 
 </td>
 
 <td style="text-align:right;">
 
-0.9314183
+0.9369042
 
 </td>
 
 <td style="text-align:right;">
 
-0.9685643
+0.9684079
 
 </td>
 
 <td style="text-align:right;">
 
-0.9496282
+0.9523956
 
 </td>
 
@@ -330,7 +382,7 @@ baseline
 
 <td style="text-align:right;">
 
-26.2
+25.3
 
 </td>
 
@@ -347,31 +399,31 @@ baseline
 
 <td style="text-align:right;">
 
-0.9057099
+0.9112401
 
 </td>
 
 <td style="text-align:right;">
 
-<span style=" font-weight: bold;    color: white;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(33, 144, 140, 1);font-size: 12px;">0.9641852</span>
+<span style=" font-weight: bold;    color: white !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(33, 144, 140, 1) !important;font-size: 12px;">0.9632468</span>
 
 </td>
 
 <td style="text-align:right;">
 
-0.9315503
+0.9380140
 
 </td>
 
 <td style="text-align:right;">
 
-0.9641852
+0.9632468
 
 </td>
 
 <td style="text-align:right;">
 
-0.9475868
+0.9504630
 
 </td>
 
@@ -383,7 +435,7 @@ baseline
 
 <td style="text-align:right;">
 
-83.3
+75.3
 
 </td>
 
