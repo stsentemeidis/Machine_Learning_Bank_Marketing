@@ -26,6 +26,7 @@ source('scripts/split_n_preproc.R')
 source('scripts/model_glm.R')
 source('scripts/model_xgbTree.R')
 source('scripts/model_ranger.R')
+source('scripts/model_stacking.R')
 
 # Parameters of Baseline ----
 source('scripts/param_modeling.R')
@@ -50,6 +51,13 @@ pipeline_ranger(target = 'y', train_set = bank_train_A_proc_dum,
                  trControl = fitControl, tuneGrid = NULL,
                  suffix = 'baseline', calculate = FALSE, seed = seed,
                  n_cores = detectCores()-1)
+
+# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
+                valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
+                trControl = fitControl, tuneGrid = NULL,
+                suffix = 'baseline', calculate = FALSE, seed = seed,
+                n_cores = detectCores()-1)
 
 # # Feature Engineering Renovation ----
 # source('scripts/feateng_renovation.R')

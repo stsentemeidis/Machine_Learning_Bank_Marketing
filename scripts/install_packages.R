@@ -33,7 +33,8 @@ packages_list <- c(
   'shiny',
   'beepr',
   'tufte',
-  'flexclust'
+  'flexclust',
+  'caretEnsemble'
 )
 
 # Palette Colour

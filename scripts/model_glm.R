@@ -72,8 +72,6 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
          readRDS(paste0('models/time_fit_glm', suffix, '.rds')), envir = .GlobalEnv)
   
   # Predicting against Valid Set with transformed target
-  # assign(paste0('pred_glm', suffix),
-  #        predict(get(paste0('fit_glm', suffix)), valid_set), envir = .GlobalEnv)
   assign(paste0('pred_glm', suffix),
          predict(get(paste0('fit_glm', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_glm_prob', suffix), get(paste0('pred_glm', suffix)), envir = .GlobalEnv)
