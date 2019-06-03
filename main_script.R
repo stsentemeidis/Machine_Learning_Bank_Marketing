@@ -84,7 +84,16 @@ save(
     'bank_train_B',
     'bank_test',
     'all_results',
-    'all_real_results'
+    'all_real_results',
+    'roc_object_glm_baseline',
+    'roc_object_ranger_baseline',
+    'roc_object_xgb_baseline',
+    'cm_plot_glm_baseline',
+    'cm_plot_ranger_baseline',
+    'cm_plot_xgb_baseline',
+    'density_plot_glm_baseline',
+    'density_plot_ranger_baseline',
+    'density_plot_xgb_baseline'
   ),
   file = 'data_output/RMarkdown_Objects.RData'
 )

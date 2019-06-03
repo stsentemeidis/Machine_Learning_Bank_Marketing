@@ -5,6 +5,7 @@
 packages_list <- c(
   'Amelia',
   'data.table',
+  'pROC',
   'ggthemes',
   'dplyr',
   'tibble',
@@ -35,6 +36,18 @@ packages_list <- c(
   'flexclust'
 )
 
+# Palette Colour
+color1 = 'white'
+color2 = 'black'
+color3 = 'black'
+color4 = 'darkturquoise'
+font1 = 'Impact'
+font2 = 'Helvetica'
+BarFillColor <- "#330066"
+HBarFillColor <- "#000099"
+BarLineColor <- "#FFFAFA"
+MissingColor <- "#FF6666"
+
 for (i in packages_list) {
   if (!i %in% installed.packages()) {
     install.packages(i, dependencies = TRUE)
@@ -53,3 +66,4 @@ print(paste0(
   'm]: '), ''),
   'All necessary packages installed and loaded'
 ))
+

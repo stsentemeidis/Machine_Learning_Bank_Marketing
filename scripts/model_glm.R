@@ -49,7 +49,8 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
         y = train_set[, target],
         method = 'glm',
         trControl = trControl,
-        tuneGrid = tuneGrid
+        tuneGrid = tuneGrid,
+        metric = 'Accuracy'
       )
       , envir = .GlobalEnv) 
     time_fit_end <- Sys.time()
@@ -71,10 +72,16 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
          readRDS(paste0('models/time_fit_glm', suffix, '.rds')), envir = .GlobalEnv)
   
   # Predicting against Valid Set with transformed target
+  # assign(paste0('pred_glm', suffix),
+  #        predict(get(paste0('fit_glm', suffix)), valid_set), envir = .GlobalEnv)
   assign(paste0('pred_glm', suffix),
-         predict(get(paste0('fit_glm', suffix)), valid_set), envir = .GlobalEnv)
+         predict(get(paste0('fit_glm', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
+  assign(paste0('pred_glm_prob', suffix), get(paste0('pred_glm', suffix)), envir = .GlobalEnv)
+  assign(paste0('pred_glm', suffix), get(paste0('pred_glm_prob', suffix))$No, envir = .GlobalEnv)
+  assign(paste0('pred_glm', suffix), ifelse(get(paste0('pred_glm', suffix)) > 0.5, 0, 1), envir = .GlobalEnv)
   
   # Compare Predictions and Valid Set
+  valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
   assign(paste0('comp_glm', suffix),
          data.frame(obs = valid_set[,target],
                     pred = get(paste0('pred_glm', suffix))), envir = .GlobalEnv)
@@ -82,8 +89,9 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
   # Generate results with transformed target
   assign(paste0('results', suffix),
          as.data.frame(
-           cbind(
-             rbind(defaultSummary(get(paste0('comp_glm',suffix)))[1]),
+           rbind(
+             cbind('Accuracy' = Accuracy(y_pred = get(paste0('pred_glm', suffix)),
+                                         y_true = valid_set[,target]),
              'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_glm', suffix)),
                                          y_true = valid_set[,target]),
              'Precision' = Precision(y_pred = get(paste0('pred_glm', suffix)),
@@ -92,6 +100,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
                                y_true = valid_set[,target]),
              'F1 Score' = F1_Score(y_pred = get(paste0('pred_glm', suffix)),
                                    y_true = valid_set[,target]),
+             'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_glm', suffix))))),
              'Coefficients' = length(get(paste0('fit_glm', suffix))$finalModel$coefficients),
              'Train Time (min)' = round(as.numeric(get(paste0('time_fit_glm', suffix)), units = 'mins'), 1),
              'CV | Accuracy' = get_best_result(get(paste0('fit_glm', suffix)))[, 'Accuracy'],
@@ -100,6 +109,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
              'CV | KappaSD' = get_best_result(get(paste0('fit_glm', suffix)))[, 'KappaSD']
            )
          ), envir = .GlobalEnv
+    )
   )
   
   # Generate all_results table | with CV and transformed target
@@ -149,6 +159,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     get(paste0('pred_glm_valid', suffix)) # To adjust if target is transformed
   ))
   colnames(submissions_valid) <- c(target)
+  submissions_valid[,'y'] <- ifelse(submissions_valid[,'y']=='1',0,1)
   assign(paste0('submission_glm_valid', suffix), submissions_valid, envir = .GlobalEnv)
   
   assign(paste0('real_results', suffix), as.data.frame(cbind(
@@ -157,6 +168,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     'Precision' = Precision(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'Recall' = Recall(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
+    'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_glm_valid', suffix))[, target]))),
     'Coefficients' = length(get(paste0('fit_glm', suffix))$finalModel$coefficients),
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_glm', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
@@ -172,7 +184,32 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     assign('all_real_results', all_real_results, envir = .GlobalEnv)
   }
   
+  # PLOT ROC
+  roc_glm <- roc(as.numeric(valid_set[, c(target)]), as.numeric(get(paste0('submission_glm_valid', suffix))[, target]))
+  assign(paste0('roc_object_glm', suffix), roc_glm,  envir = .GlobalEnv)
+  plot(get(paste0('roc_object_glm', suffix)), col=color4, lwd=4, main="ROC Curve GLM")
   
+  # Density Plot
+  prob_glm <- get(paste0('pred_glm_prob', suffix))
+  prob_glm<- melt(prob_glm)
+  assign(paste0('density_plot_glm', suffix), ggplot(prob_glm,aes(x=value, fill=variable)) + geom_density(alpha=0.25)+
+    theme_tufte(base_size = 5, ticks=F)+ 
+    ggtitle(paste0('Density Plot glm', suffix))+
+    theme(plot.margin = unit(c(10,10,10,10),'pt'),
+          axis.title=element_blank(),
+          axis.text = element_text(colour = color2, size = 9, family = font2),
+          axis.text.x = element_text(hjust = 1, size = 9, family = font2),
+          plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+          plot.background = element_rect(fill = color1)), envir = .GlobalEnv)
+  
+  get(paste0('density_plot_glm', suffix))
+  
+  # Confusion Matrix
+  cm_glm <- confusionMatrix(as.factor(get(paste0('submission_glm_valid', suffix))[, target]), as.factor(valid_set[, c(target)]))
+  cm_plot_glm <- fourfoldplot(cm_glm$table)
+  assign(paste0('cm_plot_glm', suffix), cm_plot_glm, envir = .GlobalEnv)
+  get(paste0('cm_plot_glm', suffix))
+
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(
       difftime(Sys.time(), start_time, units = 'mins'), 1
