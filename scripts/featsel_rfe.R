@@ -68,9 +68,9 @@ varImp_rfe$perc <-
 var_sel_rfe <- varImp_rfe[varImp_rfe$perc > 0.1, ]
 var_rej_rfe <- varImp_rfe[varImp_rfe$perc <= 0.1, ]
 
-# ggplot(tail(varImp_rfe,50), aes(x = reorder(Variables, Importance), y = Importance)) +
-#   geom_bar(stat = 'identity') +
-#   coord_flip()
+ggplot(tail(varImp_rfe,50), aes(x = reorder(Variables, Importance), y = Importance)) +
+  geom_bar(stat = 'identity') +
+  coord_flip()
 
 bank_train_A_rfe <-
   bank_train_A_FE2[, names(bank_train_A_FE2) %in% var_sel_rfe$Variables |
