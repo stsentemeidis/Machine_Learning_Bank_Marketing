@@ -74,7 +74,7 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   
   # Predicting against Valid Set with transformed target
   assign(paste0('pred_ranger', suffix),
-         predict(get(paste0('fit_ranger', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
+         predict(get(paste0('fit_ranger', suffix)), newdata = valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_ranger_prob', suffix), get(paste0('pred_ranger', suffix)), envir = .GlobalEnv)
   assign(paste0('pred_ranger', suffix), get(paste0('pred_ranger_prob', suffix))$No, envir = .GlobalEnv)
   assign(paste0('pred_ranger', suffix), ifelse(get(paste0('pred_ranger', suffix)) > 0.5, 0, 1), envir = .GlobalEnv)
@@ -99,8 +99,8 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
                                y_true = valid_set[,target]),
              'F1 Score' = F1_Score(y_pred = get(paste0('pred_ranger', suffix)),
                                    y_true = valid_set[,target]),
-             'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
              'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_ranger', suffix))))),
+             'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
              'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1),
              'CV | Accuracy' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'Accuracy'],
              'CV | Kappa' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'Kappa'],
@@ -183,7 +183,7 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   }
   
   
-  # PLOT ROC
+  # Plot ROC
   roc_ranger <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_ranger_valid', suffix))[, target]))
   assign(paste0('roc_object_ranger', suffix), roc_ranger,  envir = .GlobalEnv)
   # plot(get(paste0('roc_object_ranger', suffix)), col=color4, lwd=4, main="ROC Curve Ranger")

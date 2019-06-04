@@ -169,8 +169,8 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     'Precision' = Precision(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
     'Recall' = Recall(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
-    'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]))),
+    'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_xgbTree', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
   
@@ -185,7 +185,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     assign('all_real_results', all_real_results, envir = .GlobalEnv)
   }
   
-  # PLOT ROC
+  # Plot ROC
   roc_xgb <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]))
   assign(paste0('roc_object_xgb', suffix), roc_xgb,  envir = .GlobalEnv)
   # plot(get(paste0('roc_object_xgb', suffix)), col=color4, lwd=4, main="ROC Curve xgbTree")

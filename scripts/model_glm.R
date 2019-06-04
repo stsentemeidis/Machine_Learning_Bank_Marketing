@@ -183,7 +183,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     assign('all_real_results', all_real_results, envir = .GlobalEnv)
   }
   
-  # PLOT ROC
+  # Plot ROC
   roc_glm <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_glm_valid', suffix))[, target]))
   assign(paste0('roc_object_glm', suffix), roc_glm,  envir = .GlobalEnv)
   # plot(get(paste0('roc_object_glm', suffix)), col=color4, lwd=4, main="ROC Curve GLM")
