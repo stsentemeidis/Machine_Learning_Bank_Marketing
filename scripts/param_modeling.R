@@ -64,15 +64,15 @@ print(paste0(
 ))
 
 
-# Default tuneGrid for Random Forest ? ----
+# Default tuneGrid for Random Forest ----
 ranger_grid = expand.grid(
   mtry = c(1, 2, 3, 4, 5, 6, 7, 10),
-  splitrule = c('variance', 'extratrees', 'maxstat'),
+  splitrule = c('gini'),
   min.node.size = c(1, 3, 5)
 )
 
 
-# Default tuneGrid for XGBoost ? ----
+# Default tuneGrid for XGBoost ----
 nrounds = 1000
 
 xgb_grid = expand.grid(
