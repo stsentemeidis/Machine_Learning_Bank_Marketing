@@ -108,9 +108,12 @@ calculate <- TRUE
 source('scripts/featsel_rfe.R')
 
 # # XGBoost Post RFE ----
-# calculate <- FALSE
-# source('scripts/model_xgb_rfe.R')
-#
+# pipeline_xgbTree(target = 'y', train_set = bank_train_A_rfe,
+#                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+#                  trControl = fitControl, tuneGrid = NULL,
+#                  suffix = 'RFE', calculate = TRUE, seed = seed,
+#                  n_cores = detectCores()-1)
+
 # # XGBoost Tuning ----
 # calculate <- FALSE
 # source('scripts/model_tuning_xgb.R')
