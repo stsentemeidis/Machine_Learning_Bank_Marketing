@@ -506,15 +506,15 @@ $(document).ready(function () {
 <hr />
 <div id="section-bank-marketing-dataset" class="section level2">
 <h2>Bank Marketing Dataset</h2>
-<p>BLABLABLAThe <em>Bank Marketing</em> dataset contains the <strong>direct marketing campaigns of a Portuguese banking institution</strong>. The original dataset can be found on <a href="https://www.kaggle.com/henriqueyamahata/bank-marketing">Kaggle</a>.</p>
+<p>The <em>Bank Marketing</em> dataset contains the <strong>direct marketing campaigns of a Portuguese banking institution</strong>. The original dataset can be found on <a href="https://www.kaggle.com/henriqueyamahata/bank-marketing">Kaggle</a>.</p>
 <p>All the files of this project are saved in a <a href="https://github.com/ashomah/Bank-Marketing">GitHub repository</a>.</p>
 <p>The dataset consists in:</p>
 <ul>
-<li><strong>Train Set</strong> with 36168 observations with 16 features and the target <code>y</code>.<br />
+<li><strong>Train Set</strong> with 36,168 observations with 16 features and the target <code>y</code>.<br />
 </li>
-<li><strong>Test Set</strong> with 9043 observations with 16 features. The <code>y</code> column will be added to the Test Set, with NAs, to ease the pre-processing stage.</li>
+<li><strong>Test Set</strong> with 9,043 observations with 16 features. The <code>y</code> column will be added to the Test Set, with NAs, to ease the pre-processing stage.</li>
 </ul>
-<p>This project aims to predict if a customer will subscribe to a bank term deposit, based on its features and call history.</p>
+<p>This project aims to predict if a customer will subscribe to a bank term deposit, based on its features and call history of previous marketing campaigns.</p>
 <p></br></p>
 <hr />
 </div>
@@ -532,17 +532,102 @@ $(document).ready(function () {
 <p></br></p>
 <hr />
 </div>
-<div id="section-data-preparation" class="section level2">
-<h2>Data Preparation</h2>
-<p>The dataset is pretty clean…</p>
-<iframe src="http://ashomah.shinyapps.io/test?showcase=0" width="672" height="400px">
-</iframe>
+<div id="section-data-loading" class="section level2">
+<h2>Data Loading</h2>
+<p>The data seems to be pretty clean, the variables being a combination of integers and factors with no null values.</p>
+<pre><code>## [1] &quot;0 columns of the Train Set have NAs.&quot;
+## [1] &quot;0 columns of the Test Set have NAs.&quot;</code></pre>
+<p></br></p>
+<p>As this analysis is a classification, the target <code>y</code> has to be set as factor. The structures of the datasets after initial preparation are:</p>
+<pre><code>## Structure of the Train Set:
+## 'data.frame':    36168 obs. of  17 variables:
+##  $ age      : int  50 47 56 36 41 32 26 60 39 55 ...
+##  $ job      : Factor w/ 12 levels &quot;admin.&quot;,&quot;blue-collar&quot;,..: 3 10 4 2 5 9 9 2 8 1 ...
+##  $ marital  : Factor w/ 3 levels &quot;divorced&quot;,&quot;married&quot;,..: 2 2 2 2 2 3 3 2 1 1 ...
+##  $ education: Factor w/ 4 levels &quot;primary&quot;,&quot;secondary&quot;,..: 1 2 1 1 1 3 2 1 2 2 ...
+##  $ default  : num  1 0 0 0 0 0 0 0 0 0 ...
+##  $ balance  : int  537 -938 605 4608 362 0 782 193 2140 873 ...
+##  $ housing  : num  1 1 0 1 1 0 0 1 1 1 ...
+##  $ loan     : num  0 0 0 0 0 0 0 0 0 1 ...
+##  $ contact  : Factor w/ 3 levels &quot;cellular&quot;,&quot;telephone&quot;,..: 3 3 1 1 1 1 1 2 1 3 ...
+##  $ day      : int  20 28 19 14 12 4 29 12 16 3 ...
+##  $ month    : Factor w/ 12 levels &quot;apr&quot;,&quot;aug&quot;,&quot;dec&quot;,..: 7 9 2 9 9 4 5 9 1 7 ...
+##  $ duration : int  11 176 207 284 217 233 297 89 539 131 ...
+##  $ campaign : int  15 2 6 7 3 3 1 2 1 1 ...
+##  $ pdays    : int  -1 -1 -1 -1 -1 276 -1 -1 -1 -1 ...
+##  $ previous : int  0 0 0 0 0 2 0 0 0 0 ...
+##  $ poutcome : Factor w/ 4 levels &quot;failure&quot;,&quot;other&quot;,..: 4 4 4 4 4 1 4 4 4 4 ...
+##  $ y        : Factor w/ 2 levels &quot;No&quot;,&quot;Yes&quot;: 1 1 1 1 1 2 1 1 1 1 ...</code></pre>
+<pre><code>## Structure of the Test Set:
+## 'data.frame':    9043 obs. of  17 variables:
+##  $ age      : int  58 43 51 56 32 54 58 54 32 38 ...
+##  $ job      : Factor w/ 12 levels &quot;admin.&quot;,&quot;blue-collar&quot;,..: 5 10 6 5 2 6 7 2 5 5 ...
+##  $ marital  : Factor w/ 3 levels &quot;divorced&quot;,&quot;married&quot;,..: 2 3 2 2 3 2 2 2 2 3 ...
+##  $ education: Factor w/ 4 levels &quot;primary&quot;,&quot;secondary&quot;,..: 3 2 1 3 1 2 3 2 3 3 ...
+##  $ default  : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ balance  : int  2143 593 229 779 23 529 -364 1291 0 424 ...
+##  $ housing  : num  1 1 1 1 1 1 1 1 1 1 ...
+##  $ loan     : num  0 0 0 0 1 0 0 0 0 0 ...
+##  $ contact  : Factor w/ 3 levels &quot;cellular&quot;,&quot;telephone&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
+##  $ day      : int  5 5 5 5 5 5 5 5 5 5 ...
+##  $ month    : Factor w/ 12 levels &quot;apr&quot;,&quot;aug&quot;,&quot;dec&quot;,..: 9 9 9 9 9 9 9 9 9 9 ...
+##  $ duration : int  261 55 353 164 160 1492 355 266 179 104 ...
+##  $ campaign : int  1 1 1 1 1 1 1 1 1 1 ...
+##  $ pdays    : int  -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 ...
+##  $ previous : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ poutcome : Factor w/ 4 levels &quot;failure&quot;,&quot;other&quot;,..: 4 4 4 4 4 4 4 4 4 4 ...
+##  $ y        : Factor w/ 2 levels &quot;No&quot;,&quot;Yes&quot;: NA NA NA NA NA NA NA NA NA NA ...</code></pre>
 <p></br></p>
 <hr />
 </div>
 <div id="section-exploratory-data-analysis" class="section level2">
 <h2>Exploratory Data Analysis</h2>
-<p>The target of this analysis is…</p>
+<p>The target of this analysis is the variable <code>y</code>. This boolean indicates whether the customer has acquiered a bank term deposit account. With 88.4% of the customers having subscribed to this product, we can say that our Train set is slightly unbalanced. We might want to try rebalancing our dataset later in this analysis, to ensure our model is performing properly for unknown data.</p>
+<p>The features of the dataset provide different type of information about the customers.</p>
+<ul>
+<li><p>Variables giving <strong>personal information</strong> of the customers:</p>
+<ul>
+<li><p><strong><code>age</code></strong> of the customer<br />
+Customers are between 18 and 95 years old, with a mean of 40.9579739 and a median of 39. The inter-quartile range is between 33 and 48. We can also notice the presence of some outliers.</p></li>
+<li><p><strong><code>job</code></strong> category of the customer<br />
+There are 12 categories of jobs with more than half belonging to <code>blue-collar</code>, <code>management</code> and <code>technicians</code>, followed by admin and services. Retired candidates form 5% of the dataset, self-emplyed and entrepreneur around 6% and unemployed, housemaid and students each around 2%. The candidate with unknow jobs form less than 1%.</p></li>
+<li><p><strong><code>marital</code></strong> status of the customer<br />
+60% are married, 28% are single, the others are divorced.</p></li>
+<li><p><strong><code>education</code></strong> level of the customer<br />
+51% of the customers went to secondary school, 29% to tertiary school, 15% to primary school. The education of the other customers remains unknown.</p></li>
+</ul></li>
+<li><p>Variables related to <strong>financial status</strong> of the customers:</p>
+<ul>
+<li><p><strong><code>default</code></strong> history<br />
+This boolean indicates if the customer has already defaulted. Only 1.8% of the customers have defaulted.</p></li>
+<li><p><strong><code>balance</code></strong> of customer’s account<br />
+The average yearly balance of the customer in euros. The variable is ranged from -8,019 to 98,417 with a mean of 1,360 and a median of 448. The data is highly right-skewed.</p></li>
+<li><p><strong><code>housing</code> </strong> loan<br />
+This boolean indicates if the customer has a house loan. 56% of the customers have one.</p></li>
+<li><p><strong><code>loan</code></strong><br />
+This boolean indicates if the customer has a personal loan. 16% of the customers have one.</p></li>
+</ul></li>
+<li><p>Variables related to <strong>campaign interactions</strong> with the customer:</p>
+<ul>
+<li><p><strong><code>contact</code></strong> mode<br />
+How the customer was contacted, with 65% on their mobile phone, and 6% ona landline.</p></li>
+<li><p><strong><code>day</code></strong><br />
+This indicates on which day of the month the customer was contacted.</p></li>
+<li><p><strong><code>month</code></strong><br />
+This indicates on which month the customer was contacted. May seems to be the peak month with 31% of the calls followed by June, July, and August.</p></li>
+<li><p><strong><code>duration</code></strong> of the call<br />
+Last phone call duration in seconds. The average call lasts around 4 minutes. However, the longest call lasts 1.4 hours.</p></li>
+<li><p><strong><code>campaign</code></strong><br />
+Number of times the customer was contacted <em>during</em> this campaign. Customers can have been contacted up to 63 times. Around 66% were contacted twice or less.</p></li>
+<li><p><strong><code>pdays</code></strong><br />
+Number of days that passed after the customer was last contacted from a previous campaign. <code>-1</code> means that the client was not previously contacted and this is his first campaign. Around 82% of the candidates are newly campaign clients. The average time elapsed is 40 days.</p></li>
+<li><p><strong><code>previous</code></strong> contacts<br />
+Number of contacts performed <em>before</em> this campaign. Majority of the customers were never contacted. Other customers have been contacted 0.6 times on average, with a maximum of 58 times.</p></li>
+<li><p><strong><code>poutcome</code></strong> This categorical variable indicates the outcome from a previous campaign, whether it was a success or a failure. About <code>r</code> of the customers answered positively to previous campaigns.</p></li>
+</ul></li>
+</ul>
+<p>###Test set</p>
+<p>Looking at the raw test set in which we will have to consider as our unseen data and predict the outcomer we can see that it is representitive of the train set in which the variables follow almost similar summary parameters.</p>
 <div id="section-missings-treatment" class="section level3">
 <h3>Missings Treatment</h3>
 <pre class="r"><code>bank_train_plot &lt;- bank_train
@@ -653,7 +738,7 @@ missmap(bank_train[,catcols], y.labels = NULL, y.at = NULL,
 </div>
 </div>
 </div>
-<div id="section-data-preparation-1" class="section level2">
+<div id="section-data-preparation" class="section level2">
 <h2>Data Preparation</h2>
 <p></br></p>
 <hr />
@@ -798,6 +883,8 @@ Ranger baseline
 </div>
 <div id="section-feature-selection-with-lasso-and-rfe" class="section level2">
 <h2>Feature Selection with Lasso and RFE</h2>
+<iframe src="http://ashomah.shinyapps.io/test?showcase=0" width="672" height="400px">
+</iframe>
 <p></br></p>
 <hr />
 </div>

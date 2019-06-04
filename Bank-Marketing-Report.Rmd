@@ -48,16 +48,16 @@ font2 = 'Helvetica'
 
 ## Bank Marketing Dataset  
 
-BLABLABLAThe *Bank Marketing* dataset contains the **direct marketing campaigns of a Portuguese banking institution**. The original dataset can be found on [Kaggle](https://www.kaggle.com/henriqueyamahata/bank-marketing).  
+The *Bank Marketing* dataset contains the **direct marketing campaigns of a Portuguese banking institution**. The original dataset can be found on [Kaggle](https://www.kaggle.com/henriqueyamahata/bank-marketing).  
 
 All the files of this project are saved in a [GitHub repository](https://github.com/ashomah/Bank-Marketing).  
 
 The dataset consists in:  
 
-* **Train Set** with `r nrow(raw_train)` observations with `r length(raw_train)-1` features and the target `y`.  
-* **Test Set** with `r nrow(raw_test)` observations with `r length(raw_test)` features. The `y` column will be added to the Test Set, with NAs, to ease the pre-processing stage.  
+* **Train Set** with `r format(nrow(raw_train), big.mark=',')` observations with `r length(raw_train)-1` features and the target `y`.  
+* **Test Set** with `r format(nrow(raw_test), big.mark=',')` observations with `r length(raw_test)` features. The `y` column will be added to the Test Set, with NAs, to ease the pre-processing stage.  
 
-This project aims to predict if a customer will subscribe to a bank term deposit, based on its features and call history.  
+This project aims to predict if a customer will subscribe to a bank term deposit, based on its features and call history of previous marketing campaigns.  
 
 </br>
 
@@ -83,14 +83,46 @@ These packages are installed and loaded if necessary by the main script.
 
 ***
  
-## Data Preparation  
+## Data Loading  
 
-The dataset is pretty clean...  
+The data seems to be pretty clean, the variables being a combination of integers and factors with no null values.  
 
-``` {r ,echo = FALSE}
-knitr::include_app('http://ashomah.shinyapps.io/test')
+``` {r NAs, echo = FALSE, collapse=TRUE}
+# Check if contains NAs ----
+na_count <-
+  sapply(raw_train, function(y)
+    sum(length(which(is.na(
+      y
+    )))))
+na_count <- data.frame(na_count)
+na_count$perc <- round(na_count$na_count / nrow(raw_train) * 100, 2)
+print(paste0(nrow(na_count[na_count$na_count != 0,]), ' columns of the Train Set have NAs.'))
+
+na_count <-
+  sapply(raw_test, function(y)
+    sum(length(which(is.na(
+      y
+    )))))
+na_count <- data.frame(na_count)
+na_count$perc <- round(na_count$na_count / nrow(raw_test) * 100, 2)
+print(paste0(nrow(na_count[na_count$na_count != 0,]), ' columns of the Test Set have NAs.'))
 ```
 
+</br>
+
+As this analysis is a classification, the target `y` has to be set as factor. The structures of the datasets after initial preparation are:  
+
+``` {r Structure Train, echo = FALSE, collapse = TRUE}
+str_train <- capture.output(str(bank_train))
+cat('Structure of the Train Set:')
+cat(str_train, sep='\n')
+```
+
+``` {r Structure Test, echo = FALSE, collapse = TRUE}
+str_test <- capture.output(str(bank_test))
+cat('Structure of the Test Set:')
+cat(str_test, sep='\n')
+```
 
 </br>
 
@@ -98,39 +130,103 @@ knitr::include_app('http://ashomah.shinyapps.io/test')
 
 ## Exploratory Data Analysis  
 
-The target of this analysis is...  
+The target of this analysis is the variable `y`. This boolean indicates whether the customer has acquiered a bank term deposit account. With `r format(length(bank_train[bank_train$y == 'No', 'y'])/nrow(bank_train)*100, nsmall = 1, digits=2)`% of the customers having subscribed to this product, we can say that our Train set is slightly unbalanced. We might want to try rebalancing our dataset later in this analysis, to ensure our model is performing properly for unknown data.  
 
-### Missings Treatment
+The features of the dataset provide different type of information about the customers.  
 
-```{r, message=FALSE, warning=FALSE, echo=TRUE}
-bank_train_plot <- bank_train
-BarFillColor <- "#330066"
-HBarFillColor <- "#000099"
-BarLineColor <- "#FFFAFA"
-MissingColor <- "#FF6666"
+* Variables giving **personal information** of the customers:  
 
-# Palette Colour
-color1 = 'white'
-color2 = 'black'
-color3 = 'black'
-color4 = 'darkturquoise'
-font1 = 'Impact'
-font2 = 'Helvetica'
+  * **`age`** of the customer  
+  Customers are between `r min(bank_train$age)` and `r max(bank_train$age)` years old, with a mean of `r mean(bank_train$age)` and a median of `r median(bank_train$age)`. The inter-quartile range is between `r quantile(bank_train$age, 0.25)` and `r quantile(bank_train$age, 0.75)`. We can also notice the presence of some outliers.  
 
-numcols <- c('age','balance','day','duration','campaign','pdays')
-missmap(bank_train_plot[,numcols], y.labels = NULL, y.at = NULL, 
-        main = 'Missing values per Numeric variable', rank.order = TRUE,
-        col = c(color3, color4)) #No missing values in Numeric variables
+  * **`job`** category of the customer  
+  There are `r length(unique(bank_train$job))` categories of jobs with more than half belonging to `blue-collar`, `management` and `technicians`, followed by admin and services. Retired candidates form `r format(length(bank_train[bank_train$job == 'retired', 'job'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the dataset, self-emplyed and entrepreneur around 6% and unemployed, housemaid and students each around 2%. The candidate with unknow jobs form less than 1%.
 
-#Numeric Variables: No missings
+  * **`marital`** status of the customer  
+ `r format(length(bank_train[bank_train$marital == 'married', 'marital'])/nrow(bank_train)*100, digits=0, nsmall=0)`% are married, `r format(length(bank_train[bank_train$marital == 'single', 'marital'])/nrow(bank_train)*100, digits=0, nsmall=0)`% are single, the others are divorced.  
 
-catcols <- c("default","housing","loan","job","marital","education","contact","month","poutcome","y")
-bank_train_plot[,catcols] <- data.frame(apply(bank_train[catcols], 2, as.factor))
-missmap(bank_train[,catcols], y.labels = NULL, y.at = NULL, 
-        main = 'Missing values per Categorical variable', rank.order = TRUE,
-        col = c(color3, color4)) #No missing values in Categorical variables
-#Categorical Variables: No missings
+  * **`education`** level of the customer  
+  `r format(length(bank_train[bank_train$education == 'secondary', 'education'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the customers went to secondary school, `r format(length(bank_train[bank_train$education == 'tertiary', 'marital'])/nrow(bank_train)*100, digits=0, nsmall=0)`% to tertiary school, `r format(length(bank_train[bank_train$education == 'primary', 'marital'])/nrow(bank_train)*100, digits=0, nsmall=0)`% to primary school. The education of the other customers remains unknown.  
+
+* Variables related to **financial status** of the customers:  
+
+  * **`default`** history  
+  This boolean indicates if the customer has already defaulted. Only `r format(length(bank_train[bank_train$default == 1, 'default'])/nrow(bank_train)*100, digits=1, nsmall=1)`% of the customers have defaulted.  
+
+  * **`balance`** of customer's account  
+  The average yearly balance of the customer in euros. The variable is ranged from `r format(min(bank_train$balance), digits=0, nsmall=0, big.mark=',')` to `r format(max(bank_train$balance), digits=0, nsmall=0, big.mark=',')` with a mean of `r format(mean(bank_train$balance), digits=0, nsmall=0, big.mark=',')` and a median of `r format(median(bank_train$balance), digits=0, nsmall=0, big.mark=',')`. The data is highly right-skewed.  
+
+  * **`housing` ** loan  
+  This boolean indicates if the customer has a house loan. `r format(length(bank_train[bank_train$housing == 1, 'housing'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the customers have one.  
+
+  * **`loan`**  
+  This boolean indicates if the customer has a personal loan. `r format(length(bank_train[bank_train$loan == 1, 'loan'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the customers have one.  
+
+* Variables related to **campaign interactions** with the customer:  
+
+  * **`contact`** mode  
+  How the customer was contacted, with `r format(length(bank_train[bank_train$contact == 'cellular', 'contact'])/nrow(bank_train)*100, digits=0, nsmall=0)`% on their mobile phone, and `r format(length(bank_train[bank_train$contact == 'telephone', 'contact'])/nrow(bank_train)*100, digits=0, nsmall=0)`% ona landline.  
+
+  * **`day`**  
+  This indicates on which day of the month the customer was contacted.  
+
+  * **`month`**  
+  This indicates on which month the customer was contacted. May seems to be the peak month with `r format(length(bank_train[bank_train$month == 'may', 'month'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the calls followed by June, July, and August.  
+
+  * **`duration`** of the call  
+  Last phone call duration in seconds. The average call lasts around `r format(mean(bank_train$duration)/60, digits=0, nsmall=0)` minutes. However, the longest call lasts `r format(max(bank_train$duration)/60/60, digits=1, nsmall=1)` hours.
+
+  * **`campaign`**  
+  Number of times the customer was contacted *during* this campaign. Customers can have been contacted up to `r max(bank_train$campaign)` times. Around `r format(length(bank_train[bank_train$campaign <= 2, 'campaign'])/nrow(bank_train)*100, digits=0, nsmall=0)`% were contacted twice or less.  
+
+  * **`pdays`**  
+  Number of days that passed after the customer was last contacted from a previous campaign. `-1` means that the client was not previously contacted and this is his first campaign. Around `r format(length(bank_train[bank_train$pdays == -1, 'pdays'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the candidates are newly campaign clients. The average time elapsed is `r format(mean(bank_train$pdays), digits=0, nsmall=0)` days.  
+
+  * **`previous`** contacts  
+  Number of contacts performed *before* this campaign. Majority of the customers were never contacted. Other customers have been contacted `r format(mean(bank_train[bank_train$previous != -1, 'previous']), digits=0, nsmall=0)` times on average, with a maximum of `r format(max(bank_train[bank_train$previous != -1, 'previous']), digits=0, nsmall=0)` times.  
+
+  * **`poutcome`**
+  This categorical variable indicates the outcome from a previous campaign, whether it was a success or a failure. About `r ` of the customers answered positively to previous campaigns.  
+
+
+```{r, echo = FALSE}
+# 
+# summary(raw_train)
+# sort(summary(raw_train$job), dec=T)/nrow(raw_train)
+# sort(summary(raw_train$marital), dec=T)/nrow(raw_train)
+# sort(summary(raw_train$education), dec=T)/nrow(raw_train)
+# sort(summary(raw_train$default), dec=T)/nrow(raw_train)
+# sort(summary(raw_train$housing), dec=T)/nrow(raw_train)
+# sort(summary(raw_train$loan), dec=T)/nrow(raw_train)
+# sort(summary(raw_train$contact), dec=T)/nrow(raw_train)
+# sort(summary(raw_train$month), dec=T)/nrow(raw_train)
+# sort(summary(as.factor(raw_train$campaign),dec=T)/nrow(raw_train))
+# sort(summary(as.factor(raw_train$pdays),dec=T)/nrow(raw_train))
+# table(as.factor(raw_train$previous))
+# sort(summary(as.factor(raw_train$y),dec=T)/nrow(raw_train))
 ```
+
+###Test set
+
+Looking at the raw test set in which we will have to consider as our unseen data and predict the outcomer we can see that it is representitive of the train set in which the variables follow almost similar summary parameters.
+
+```{r, echo = FALSE}
+# summary(raw_test)
+# sort(summary(raw_test$job), dec=T)/nrow(raw_test)
+# sort(summary(raw_test$marital), dec=T)/nrow(raw_test)
+# sort(summary(raw_test$education), dec=T)/nrow(raw_test)
+# sort(summary(raw_test$default), dec=T)/nrow(raw_test)
+# sort(summary(raw_test$housing), dec=T)/nrow(raw_test)
+# sort(summary(raw_test$loan), dec=T)/nrow(raw_test)
+# sort(summary(raw_test$contact), dec=T)/nrow(raw_test)
+# sort(summary(raw_test$month), dec=T)/nrow(raw_test)
+# sort(summary(as.factor(raw_test$campaign),dec=T)/nrow(raw_test))
+# sort(summary(as.factor(raw_test$pdays),dec=T)/nrow(raw_test))
+# table(as.factor(raw_test$previous))
+# sort(summary(as.factor(raw_test$y),dec=T)/nrow(raw_test))
+```
+
+
 
 ### Univariate Analysis: Categorical Variables
 
@@ -757,6 +853,10 @@ all_real_results[1:3,] %>%
 ***
 
 ## Feature Selection with Lasso and RFE  
+
+``` {r , echo = FALSE}
+knitr::include_app('http://ashomah.shinyapps.io/test')
+```
 
 
 

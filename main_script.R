@@ -171,6 +171,10 @@ save(
 
 save.image(file = 'data_output/ALL.RData')
 
+# Save files for ShinyApps
+saveRDS(bank_train, file = 'shinyapps/plot_eda/data/bank_train.rds')
+
+
 print(paste0('[', round(
   difftime(Sys.time(), start_time, units = 'mins'), 1
 ), 'm]: ',
