@@ -42,6 +42,7 @@ if (calculate == TRUE) {
     )
   time_fit_end <- Sys.time()
   stopCluster(cl)
+  registerDoSEQ()
   time_fit_rfe <- time_fit_end - time_fit_start
   saveRDS(results_rfe, 'models/results_rfe.rds')
   saveRDS(time_fit_rfe,

@@ -6,7 +6,7 @@
 start_time <- Sys.time()
 print(paste0('---START--- Starting at ', start_time))
 
-options(warn = 0) # -1 to hide the warnings
+options(warn = 0) # -1 to hide the warnings, 0 to show them
 seed <- 2019
 set.seed(seed)
 
@@ -105,40 +105,33 @@ source('scripts/featsel_lasso.R')
 calculate <- FALSE
 source('scripts/featsel_rfe.R')
 
-# # Logistic Regression Post RFE ----
-# pipeline_glm(target = 'y', train_set = bank_train_A_rfe,
-#                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
-#                  trControl = fitControl, tuneGrid = NULL,
-#                  suffix = 'RFE', calculate = TRUE, seed = seed,
-#                  n_cores = detectCores()-1)
-# 
-# # XGBoost Post RFE ----
-# pipeline_xgbTree(target = 'y', train_set = bank_train_A_rfe,
-#                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
-#                  trControl = fitControl, tuneGrid = NULL,
-#                  suffix = 'RFE', calculate = TRUE, seed = seed,
-#                  n_cores = detectCores()-1)
-# 
-# # Logistic Regression Tuning ----
-# pipeline_glm(target = 'y', train_set = bank_train_A_rfe,
-#              valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
-#              trControl = tuningControl, tuneGrid = NULL,
-#              suffix = 'Tuning', calculate = TRUE, seed = seed,
-#              n_cores = detectCores()-1)
-# 
-# # XGBoost Tuning ----
-# pipeline_xgbTree(target = 'y', train_set = bank_train_A_rfe,
-#                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
-#                  trControl = tuningControl, tuneGrid = xgb_grid,
-#                  suffix = 'Tuning', calculate = TRUE, seed = seed,
-#                  n_cores = detectCores()-1)
-# 
-# # Ranger Tuning ----
-# pipeline_ranger(target = 'y', train_set = bank_train_A_rfe,
-#                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
-#                  trControl = tuningControl, tuneGrid = ranger_grid,
-#                  suffix = 'Tuning', calculate = TRUE, seed = seed,
-#                  n_cores = detectCores()-1)
+# Logistic Regression Post RFE ----
+pipeline_glm(target = 'y', train_set = bank_train_A_rfe,
+                 valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+                 trControl = fitControl, tuneGrid = NULL,
+                 suffix = 'RFE', calculate = FALSE, seed = seed,
+                 n_cores = detectCores()-1)
+
+# XGBoost Post RFE ----
+pipeline_xgbTree(target = 'y', train_set = bank_train_A_rfe,
+                 valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+                 trControl = fitControl, tuneGrid = NULL,
+                 suffix = 'RFE', calculate = FALSE, seed = seed,
+                 n_cores = detectCores()-1)
+
+# XGBoost Tuning ----
+pipeline_xgbTree(target = 'y', train_set = bank_train_A_rfe,
+                 valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+                 trControl = tuningControl, tuneGrid = xgb_grid,
+                 suffix = 'Tuning', calculate = FALSE, seed = seed,
+                 n_cores = detectCores()-1)
+
+# Ranger Tuning ----
+pipeline_ranger(target = 'y', train_set = bank_train_A_rfe,
+                 valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+                 trControl = tuningControl, tuneGrid = ranger_grid,
+                 suffix = 'Tuning', calculate = FALSE, seed = seed,
+                 n_cores = detectCores()-1)
 
 # # Baseline Stacking Logistic Regression | Ranger | xgbTree ----
 # pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
@@ -166,9 +159,9 @@ save(
     'roc_object_glm_baseline',
     'roc_object_ranger_baseline',
     'roc_object_xgb_baseline',
-    'cm_plot_glm_baseline',
-    'cm_plot_ranger_baseline',
-    'cm_plot_xgb_baseline',
+    'cm_glm_baseline',
+    'cm_ranger_baseline',
+    'cm_xgb_baseline',
     'density_plot_glm_baseline',
     'density_plot_ranger_baseline',
     'density_plot_xgb_baseline'
