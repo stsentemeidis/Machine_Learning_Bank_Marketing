@@ -34,6 +34,7 @@ packages_list <- c(
   'beepr',
   'tufte',
   'flexclust',
+  'factoextra'
   'caretEnsemble'
 )
 

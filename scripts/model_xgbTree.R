@@ -59,6 +59,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     
     # Stop Multithreading
     stopCluster(cl)
+    registerDoSEQ()
     
     # Save model
     assign(paste0('time_fit_xgbTree', suffix),

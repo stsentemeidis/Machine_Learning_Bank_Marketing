@@ -5,6 +5,7 @@ always_allow_html: yes
 output:
   html_document:
     theme: yeti
+    code_folding: 'none' 
   github_document: default
 params: 
   shiny: TRUE
@@ -86,6 +87,11 @@ These packages are installed and loaded if necessary by the main script.
 
 The dataset is pretty clean...  
 
+``` {r ,echo = FALSE}
+knitr::include_app('http://ashomah.shinyapps.io/test')
+```
+
+
 </br>
 
 ***
@@ -96,7 +102,7 @@ The target of this analysis is...
 
 ### Missings Treatment
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
+```{r, message=FALSE, warning=FALSE, echo=TRUE}
 bank_train_plot <- bank_train
 BarFillColor <- "#330066"
 HBarFillColor <- "#000099"
