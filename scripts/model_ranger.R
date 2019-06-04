@@ -168,7 +168,8 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_ranger_valid', suffix))[, target]))),
     'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
-    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1)
+    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1),
+    'File' = paste0('fit_ranger', suffix)
   )), envir = .GlobalEnv)
   
   # Generate all_real_results table with original target

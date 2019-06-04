@@ -36,7 +36,9 @@ packages_list <- c(
   'flexclust',
   'factoextra',
   'caretEnsemble',
-  'AUC'
+  'AUC',
+  'shinydashboard',
+  'rsconnect'
 )
 
 for (i in packages_list) {

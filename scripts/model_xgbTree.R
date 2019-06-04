@@ -171,7 +171,8 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]))),
     'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,
-    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_xgbTree', suffix)), units = 'mins'), 1)
+    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_xgbTree', suffix)), units = 'mins'), 1),
+    'File' = paste0('fit_xgbTree', suffix)
   )), envir = .GlobalEnv)
   
   # Generate all_real_results table with original target

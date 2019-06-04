@@ -173,6 +173,7 @@ save.image(file = 'data_output/ALL.RData')
 
 # Save files for ShinyApps
 saveRDS(bank_train, file = 'shinyapps/plot_eda/data/bank_train.rds')
+saveRDS(all_real_results, file = 'shinyapps/model_dash/data/all_real_results.rds')
 
 
 print(paste0('[', round(

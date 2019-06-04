@@ -134,6 +134,8 @@ The target of this analysis is the variable `y`. This boolean indicates whether 
 
 The features of the dataset provide different type of information about the customers.  
 
+</br>
+
 * Variables giving **personal information** of the customers:  
 
   * **`age`** of the customer  
@@ -148,6 +150,8 @@ The features of the dataset provide different type of information about the cust
   * **`education`** level of the customer  
   `r format(length(bank_train[bank_train$education == 'secondary', 'education'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the customers went to secondary school, `r format(length(bank_train[bank_train$education == 'tertiary', 'marital'])/nrow(bank_train)*100, digits=0, nsmall=0)`% to tertiary school, `r format(length(bank_train[bank_train$education == 'primary', 'marital'])/nrow(bank_train)*100, digits=0, nsmall=0)`% to primary school. The education of the other customers remains unknown.  
 
+</br>
+
 * Variables related to **financial status** of the customers:  
 
   * **`default`** history  
@@ -161,6 +165,8 @@ The features of the dataset provide different type of information about the cust
 
   * **`loan`**  
   This boolean indicates if the customer has a personal loan. `r format(length(bank_train[bank_train$loan == 1, 'loan'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the customers have one.  
+
+</br>
 
 * Variables related to **campaign interactions** with the customer:  
 
@@ -186,7 +192,11 @@ The features of the dataset provide different type of information about the cust
   Number of contacts performed *before* this campaign. Majority of the customers were never contacted. Other customers have been contacted `r format(mean(bank_train[bank_train$previous != -1, 'previous']), digits=0, nsmall=0)` times on average, with a maximum of `r format(max(bank_train[bank_train$previous != -1, 'previous']), digits=0, nsmall=0)` times.  
 
   * **`poutcome`**
-  This categorical variable indicates the outcome from a previous campaign, whether it was a success or a failure. About `r ` of the customers answered positively to previous campaigns.  
+  This categorical variable indicates the outcome from a previous campaign, whether it was a success or a failure. About `r format(length(bank_train[bank_train$poutcome == 'success', 'poutcome'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the customers answered positively to previous campaigns.  
+
+</br>
+
+<iframe src ="http://ashomah.shinyapps.io/plot_eda" height=900px width=100% position="center" frameborder="0" />
 
 
 ```{r, echo = FALSE}
@@ -231,42 +241,42 @@ Looking at the raw test set in which we will have to consider as our unseen data
 ### Univariate Analysis: Categorical Variables
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-for (i in catcols){
-  if (i == 'job' | i == 'month'){
-    bank_train_plot[, i] <- as.factor(bank_train_plot[,i])
-    assign(paste0(i,'_factor_plot'), ggplot(bank_train_plot, aes_string(x=i)) +
-           geom_bar(fill = color4)+
-           theme_tufte(base_size = 5, ticks=F)+
-           theme(plot.margin = unit(c(10,10,10,10),'pt'),
-                 axis.title=element_blank(),
-                 axis.text = element_text(colour = color2, size = 7, family = font2),
-                 axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
-                 legend.position = 'None',
-                 plot.background = element_rect(fill = color1)))}
-  else{
-    bank_train_plot[, i] <- as.factor(bank_train_plot[,i])
-    assign(paste0(i,'_factor_plot'), ggplot(bank_train_plot, aes_string(x=i)) +
-             geom_bar(fill = color4)+
-             theme_tufte(base_size = 5, ticks=F)+
-             theme(plot.margin = unit(c(10,10,10,10),'pt'),
-                   axis.title=element_blank(),
-                   axis.text = element_text(colour = color2, size = 7, family = font2),
-                   axis.text.x = element_text(hjust = 1, size = 7, family = font2),
-                   legend.position = 'None',
-                   plot.background = element_rect(fill = color1)))
-  }
-}
-
-grid.arrange(default_factor_plot,
-             housing_factor_plot,
-             loan_factor_plot,
-             job_factor_plot,
-             marital_factor_plot,
-             education_factor_plot,
-             contact_factor_plot,
-             month_factor_plot,
-             poutcome_factor_plot,
-             y_factor_plot)
+# for (i in catcols){
+#   if (i == 'job' | i == 'month'){
+#     bank_train_plot[, i] <- as.factor(bank_train_plot[,i])
+#     assign(paste0(i,'_factor_plot'), ggplot(bank_train_plot, aes_string(x=i)) +
+#            geom_bar(fill = color4)+
+#            theme_tufte(base_size = 5, ticks=F)+
+#            theme(plot.margin = unit(c(10,10,10,10),'pt'),
+#                  axis.title=element_blank(),
+#                  axis.text = element_text(colour = color2, size = 7, family = font2),
+#                  axis.text.x = element_text(hjust = 1, size = 7, family = font2, angle = 45),
+#                  legend.position = 'None',
+#                  plot.background = element_rect(fill = color1)))}
+#   else{
+#     bank_train_plot[, i] <- as.factor(bank_train_plot[,i])
+#     assign(paste0(i,'_factor_plot'), ggplot(bank_train_plot, aes_string(x=i)) +
+#              geom_bar(fill = color4)+
+#              theme_tufte(base_size = 5, ticks=F)+
+#              theme(plot.margin = unit(c(10,10,10,10),'pt'),
+#                    axis.title=element_blank(),
+#                    axis.text = element_text(colour = color2, size = 7, family = font2),
+#                    axis.text.x = element_text(hjust = 1, size = 7, family = font2),
+#                    legend.position = 'None',
+#                    plot.background = element_rect(fill = color1)))
+#   }
+# }
+# 
+# grid.arrange(default_factor_plot,
+#              housing_factor_plot,
+#              loan_factor_plot,
+#              job_factor_plot,
+#              marital_factor_plot,
+#              education_factor_plot,
+#              contact_factor_plot,
+#              month_factor_plot,
+#              poutcome_factor_plot,
+#              y_factor_plot)
 ```
 
 ### Univariate Analysis: Numerical Variables
@@ -854,10 +864,6 @@ all_real_results[1:3,] %>%
 
 ## Feature Selection with Lasso and RFE  
 
-``` {r , echo = FALSE}
-knitr::include_app('http://ashomah.shinyapps.io/test')
-```
-
 
 
 </br>
@@ -874,6 +880,10 @@ knitr::include_app('http://ashomah.shinyapps.io/test')
 ## Final Model  
 
 The best model for...  
+
+
+<iframe src ="http://ashomah.shinyapps.io/model_dash" height=900px width=100% position="center" frameborder="0" />
+
 
 <br><br>
 
