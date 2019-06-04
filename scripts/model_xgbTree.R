@@ -75,9 +75,13 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
   
   # Predicting against Valid Set with transformed target
   assign(paste0('pred_xgbTree', suffix),
-         predict(get(paste0('fit_xgbTree', suffix)), valid_set), envir = .GlobalEnv)
+         predict(get(paste0('fit_xgbTree', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
+  assign(paste0('pred_xgbTree_prob', suffix), get(paste0('pred_xgbTree', suffix)), envir = .GlobalEnv)
+  assign(paste0('pred_xgbTree', suffix), get(paste0('pred_xgbTree_prob', suffix))$No, envir = .GlobalEnv)
+  assign(paste0('pred_xgbTree', suffix), ifelse(get(paste0('pred_xgbTree', suffix)) > 0.5, 0, 1), envir = .GlobalEnv)
   
   # Compare Predictions and Valid Set
+  valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
   assign(paste0('comp_xgbTree', suffix),
          data.frame(obs = valid_set[,target],
                     pred = get(paste0('pred_xgbTree', suffix))), envir = .GlobalEnv)
@@ -85,8 +89,9 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
   # Generate results with transformed target
   assign(paste0('results', suffix),
          as.data.frame(
-           cbind(
-             rbind(defaultSummary(get(paste0('comp_xgbTree',suffix)))[1]),
+           rbind(
+             cbind('Accuracy' = Accuracy(y_pred = get(paste0('pred_xgbTree', suffix)),
+                                         y_true = valid_set[,target]),
              'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_xgbTree', suffix)),
                                          y_true = valid_set[,target]),
              'Precision' = Precision(y_pred = get(paste0('pred_xgbTree', suffix)),
@@ -95,6 +100,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
                                y_true = valid_set[,target]),
              'F1 Score' = F1_Score(y_pred = get(paste0('pred_xgbTree', suffix)),
                                    y_true = valid_set[,target]),
+             'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_xgbTree', suffix))))),
              'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,
              'Train Time (min)' = round(as.numeric(get(paste0('time_fit_xgbTree', suffix)), units = 'mins'), 1),
              'CV | Accuracy' = get_best_result(get(paste0('fit_xgbTree', suffix)))[, 'Accuracy'],
@@ -103,6 +109,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
              'CV | KappaSD' = get_best_result(get(paste0('fit_xgbTree', suffix)))[, 'KappaSD']
            )
          ), envir = .GlobalEnv
+    )
   )
   
   # Generate all_results table | with CV and transformed target
@@ -152,6 +159,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     get(paste0('pred_xgbTree_valid', suffix)) # To adjust if target is transformed
   ))
   colnames(submissions_valid) <- c(target)
+  submissions_valid[,'y'] <- ifelse(submissions_valid[,'y']=='1',0,1)
   assign(paste0('submission_xgbTree_valid', suffix), submissions_valid, envir = .GlobalEnv)
 
   assign(paste0('real_results', suffix), as.data.frame(cbind(
@@ -161,6 +169,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     'Recall' = Recall(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
     'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,
+    'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]))),
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_xgbTree', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
   
@@ -175,6 +184,30 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     assign('all_real_results', all_real_results, envir = .GlobalEnv)
   }
   
+  # PLOT ROC
+  roc_xgb <- roc(as.numeric(valid_set[, c(target)]), as.numeric(get(paste0('submission_xgbTree_valid', suffix))[, target]))
+  assign(paste0('roc_object_xgb', suffix), roc_xgb,  envir = .GlobalEnv)
+  plot(get(paste0('roc_object_xgb', suffix)), col=color4, lwd=4, main="ROC Curve xgbTree")
+  
+  # Density Plot
+  prob_xgb <- get(paste0('pred_xgbTree_prob', suffix))
+  prob_xgb<- melt(prob_xgb)
+  assign(paste0('density_plot_xgb', suffix), ggplot(prob_xgb,aes(x=value, fill=variable)) + geom_density(alpha=0.25)+
+           theme_tufte(base_size = 5, ticks=F)+ 
+           ggtitle(paste0('Density Plot xgbTree', suffix))+
+           theme(plot.margin = unit(c(10,10,10,10),'pt'),
+                 axis.title=element_blank(),
+                 axis.text = element_text(colour = color2, size = 9, family = font2),
+                 axis.text.x = element_text(hjust = 1, size = 9, family = font2),
+                 plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+                 plot.background = element_rect(fill = color1)), envir = .GlobalEnv)
+  get(paste0('density_plot_xgb', suffix))
+  
+  # Confusion Matrix
+  cm_xgb <- confusionMatrix(as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]), as.factor(valid_set[, c(target)]))
+  cm_plot_xgb <- fourfoldplot(cm_xgb$table)
+  assign(paste0('cm_plot_xgb', suffix), cm_plot_xgb, envir = .GlobalEnv)
+  get(paste0('cm_plot_xgb', suffix))
   
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(
