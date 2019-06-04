@@ -266,6 +266,12 @@ F1 Score
 
 <th style="text-align:right;">
 
+AUC
+
+</th>
+
+<th style="text-align:right;">
+
 Coefficients
 
 </th>
@@ -318,6 +324,12 @@ baseline
 <td style="text-align:right;">
 
 0.9473285
+
+</td>
+
+<td style="text-align:right;">
+
+0.7928246
 
 </td>
 
@@ -376,6 +388,12 @@ baseline
 
 <td style="text-align:right;">
 
+0.8065931
+
+</td>
+
+<td style="text-align:right;">
+
 48
 
 </td>
@@ -424,6 +442,12 @@ baseline
 <td style="text-align:right;">
 
 0.9504630
+
+</td>
+
+<td style="text-align:right;">
+
+0.7928451
 
 </td>
 

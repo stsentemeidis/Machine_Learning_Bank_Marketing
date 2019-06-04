@@ -34,21 +34,10 @@ packages_list <- c(
   'beepr',
   'tufte',
   'flexclust',
-  'factoextra'
-  'caretEnsemble'
+  'factoextra',
+  'caretEnsemble',
+  'AUC'
 )
-
-# Palette Colour
-color1 = 'white'
-color2 = 'black'
-color3 = 'black'
-color4 = 'darkturquoise'
-font1 = 'Impact'
-font2 = 'Helvetica'
-BarFillColor <- "#330066"
-HBarFillColor <- "#000099"
-BarLineColor <- "#FFFAFA"
-MissingColor <- "#FF6666"
 
 for (i in packages_list) {
   if (!i %in% installed.packages()) {

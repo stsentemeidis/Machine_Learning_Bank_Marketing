@@ -184,9 +184,9 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
   }
   
   # PLOT ROC
-  roc_glm <- roc(as.numeric(valid_set[, c(target)]), as.numeric(get(paste0('submission_glm_valid', suffix))[, target]))
+  roc_glm <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_glm_valid', suffix))[, target]))
   assign(paste0('roc_object_glm', suffix), roc_glm,  envir = .GlobalEnv)
-  plot(get(paste0('roc_object_glm', suffix)), col=color4, lwd=4, main="ROC Curve GLM")
+  # plot(get(paste0('roc_object_glm', suffix)), col=color4, lwd=4, main="ROC Curve GLM")
   
   # Density Plot
   prob_glm <- get(paste0('pred_glm_prob', suffix))
@@ -201,13 +201,13 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
           plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
           plot.background = element_rect(fill = color1)), envir = .GlobalEnv)
   
-  get(paste0('density_plot_glm', suffix))
+  # get(paste0('density_plot_glm', suffix))
   
   # Confusion Matrix
-  cm_glm <- confusionMatrix(as.factor(get(paste0('submission_glm_valid', suffix))[, target]), as.factor(valid_set[, c(target)]))
-  cm_plot_glm <- fourfoldplot(cm_glm$table)
-  assign(paste0('cm_plot_glm', suffix), cm_plot_glm, envir = .GlobalEnv)
-  get(paste0('cm_plot_glm', suffix))
+  assign(paste0('cm_glm', suffix), confusionMatrix(as.factor(get(paste0('submission_glm_valid', suffix))[, target]), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  # cm_plot_glm <- fourfoldplot(cm_glm$table)
+  # assign(paste0('cm_plot_glm', suffix), cm_plot_glm, envir = .GlobalEnv)
+  # get(paste0('cm_plot_glm', suffix))
 
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(

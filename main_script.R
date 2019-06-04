@@ -16,9 +16,6 @@ source('scripts/install_packages.R')
 # Read and Format Dataset ----
 source('scripts/read_format_data.R')
 
-# # Exploratory Data Analysis ----
-# source('scripts/eda.R')
-
 # Split and Preprocess Dataset ----
 source('scripts/split_n_preproc.R')
 
@@ -105,27 +102,50 @@ pipeline_ranger(target = 'y', train_set = bank_train_A_FE2,
 source('scripts/featsel_lasso.R')
 
 # Feature Selection RFE ----
-calculate <- TRUE
+calculate <- FALSE
 source('scripts/featsel_rfe.R')
 
+# # Logistic Regression Post RFE ----
+# pipeline_glm(target = 'y', train_set = bank_train_A_rfe,
+#                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+#                  trControl = fitControl, tuneGrid = NULL,
+#                  suffix = 'RFE', calculate = TRUE, seed = seed,
+#                  n_cores = detectCores()-1)
+# 
 # # XGBoost Post RFE ----
 # pipeline_xgbTree(target = 'y', train_set = bank_train_A_rfe,
 #                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
 #                  trControl = fitControl, tuneGrid = NULL,
 #                  suffix = 'RFE', calculate = TRUE, seed = seed,
 #                  n_cores = detectCores()-1)
-
+# 
+# # Logistic Regression Tuning ----
+# pipeline_glm(target = 'y', train_set = bank_train_A_rfe,
+#              valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+#              trControl = tuningControl, tuneGrid = NULL,
+#              suffix = 'Tuning', calculate = TRUE, seed = seed,
+#              n_cores = detectCores()-1)
+# 
 # # XGBoost Tuning ----
-# calculate <- FALSE
-# source('scripts/model_tuning_xgb.R')
-#
+# pipeline_xgbTree(target = 'y', train_set = bank_train_A_rfe,
+#                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+#                  trControl = tuningControl, tuneGrid = xgb_grid,
+#                  suffix = 'Tuning', calculate = TRUE, seed = seed,
+#                  n_cores = detectCores()-1)
+# 
+# # Ranger Tuning ----
+# pipeline_ranger(target = 'y', train_set = bank_train_A_rfe,
+#                  valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+#                  trControl = tuningControl, tuneGrid = ranger_grid,
+#                  suffix = 'Tuning', calculate = TRUE, seed = seed,
+#                  n_cores = detectCores()-1)
 
-# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
-pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
-                valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
-                trControl = fitControl, tuneGrid = NULL,
-                suffix = 'baseline', calculate = FALSE, seed = seed,
-                n_cores = detectCores()-1)
+# # Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+# pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
+#                 valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
+#                 trControl = fitControl, tuneGrid = NULL,
+#                 suffix = 'baseline', calculate = FALSE, seed = seed,
+#                 n_cores = detectCores()-1)
 
 
 # Save RData for RMarkdown ----
@@ -142,7 +162,7 @@ save(
     'all_real_results',
     'opt_nb_clusters',
     'silhouette_9',
-    'kmeans_9'
+    'kmeans_9',
     'roc_object_glm_baseline',
     'roc_object_ranger_baseline',
     'roc_object_xgb_baseline',

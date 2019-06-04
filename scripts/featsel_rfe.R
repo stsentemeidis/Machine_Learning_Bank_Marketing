@@ -2,18 +2,13 @@
 #### THIS SCRIPT SELECTS FEATURE USING A RECURSIVE FEATURE ELIMINATION
 ####
 
-# source('scripts/install_packages.R')
-# load(file = 'data_output/ALL_LATEST.RData')
-# calculate <- TRUE
-# plot_counter <- 44
 
 # Set seed
 seed <- ifelse(exists('seed'), seed, 2019)
 set.seed(seed)
 
 # Feature Selection with Recursive Feature Elimination ----
-# subsets <- c(10, 20, 30, 40, 50, 60, 80, 100)
-subsets <- seq(from = 20, to = 40, by = 1)
+subsets <- c(10, 20, 24, 26, 28, 30, 32, 34, 36, 40, 50, 60, 80, 100)
 
 ctrl <- rfeControl(
   functions = rfFuncs,

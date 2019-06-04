@@ -184,9 +184,9 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   
   
   # PLOT ROC
-  roc_ranger <- roc(as.numeric(valid_set[, c(target)]), as.numeric(get(paste0('submission_ranger_valid', suffix))[, target]))
+  roc_ranger <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_ranger_valid', suffix))[, target]))
   assign(paste0('roc_object_ranger', suffix), roc_ranger,  envir = .GlobalEnv)
-  plot(get(paste0('roc_object_ranger', suffix)), col=color4, lwd=4, main="ROC Curve Ranger")
+  # plot(get(paste0('roc_object_ranger', suffix)), col=color4, lwd=4, main="ROC Curve Ranger")
   
   # Density Plot
   prob_ranger <- get(paste0('pred_ranger_prob', suffix))
@@ -200,13 +200,13 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
                  axis.text.x = element_text(hjust = 1, size = 9, family = font2),
                  plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
                  plot.background = element_rect(fill = color1)), envir = .GlobalEnv)
-  get(paste0('density_plot_ranger', suffix))
+  # get(paste0('density_plot_ranger', suffix))
   
   # Confusion Matrix
-  cm_ranger <- confusionMatrix(as.factor(get(paste0('submission_ranger_valid', suffix))[, target]), as.factor(valid_set[, c(target)]))
-  cm_plot_ranger <- fourfoldplot(cm_ranger$table)
-  assign(paste0('cm_plot_ranger', suffix), cm_plot_ranger, envir = .GlobalEnv)
-  get(paste0('cm_plot_ranger', suffix))
+  assign(paste0('cm_ranger', suffix), confusionMatrix(as.factor(get(paste0('submission_ranger_valid', suffix))[, target]), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  # cm_plot_ranger <- fourfoldplot(cm_ranger$table)
+  # assign(paste0('cm_plot_ranger', suffix), cm_plot_ranger, envir = .GlobalEnv)
+  # get(paste0('cm_plot_ranger', suffix))
   
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(

@@ -186,9 +186,9 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
   }
   
   # PLOT ROC
-  roc_xgb <- roc(as.numeric(valid_set[, c(target)]), as.numeric(get(paste0('submission_xgbTree_valid', suffix))[, target]))
+  roc_xgb <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]))
   assign(paste0('roc_object_xgb', suffix), roc_xgb,  envir = .GlobalEnv)
-  plot(get(paste0('roc_object_xgb', suffix)), col=color4, lwd=4, main="ROC Curve xgbTree")
+  # plot(get(paste0('roc_object_xgb', suffix)), col=color4, lwd=4, main="ROC Curve xgbTree")
   
   # Density Plot
   prob_xgb <- get(paste0('pred_xgbTree_prob', suffix))
@@ -202,13 +202,13 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
                  axis.text.x = element_text(hjust = 1, size = 9, family = font2),
                  plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
                  plot.background = element_rect(fill = color1)), envir = .GlobalEnv)
-  get(paste0('density_plot_xgb', suffix))
+  # get(paste0('density_plot_xgb', suffix))
   
   # Confusion Matrix
-  cm_xgb <- confusionMatrix(as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]), as.factor(valid_set[, c(target)]))
-  cm_plot_xgb <- fourfoldplot(cm_xgb$table)
-  assign(paste0('cm_plot_xgb', suffix), cm_plot_xgb, envir = .GlobalEnv)
-  get(paste0('cm_plot_xgb', suffix))
+  assign(paste0('cm_xgb', suffix), confusionMatrix(as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  # cm_plot_xgb <- fourfoldplot(cm_xgb$table)
+  # assign(paste0('cm_plot_xgb', suffix), cm_plot_xgb, envir = .GlobalEnv)
+  # get(paste0('cm_plot_xgb', suffix))
   
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(

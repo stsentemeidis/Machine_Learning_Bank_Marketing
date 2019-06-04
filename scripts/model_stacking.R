@@ -334,16 +334,16 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
   }
   
   # PLOT ROC
-  roc_glm <- roc(as.numeric(valid_set[, c(target)]), as.numeric(get(paste0('submission_stack_valid', suffix))[, 'stack_glm']))
+  roc_glm <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_glm']))
   assign(paste0('roc_object_stack_glm', suffix), roc_glm,  envir = .GlobalEnv)
-  roc_glm <- roc(as.numeric(valid_set[, c(target)]), as.numeric(get(paste0('submission_stack_valid', suffix))[, 'stack_rf']))
+  roc_glm <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_rf']))
   assign(paste0('roc_object_stack_rf', suffix), roc_glm,  envir = .GlobalEnv)
-  roc_glm <- roc(as.numeric(valid_set[, c(target)]), as.numeric(get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree']))
+  roc_glm <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree']))
   assign(paste0('roc_object_stack_xgbTree', suffix), roc_glm,  envir = .GlobalEnv)
   
-  plot(get(paste0('roc_object_stack_glm', suffix)), col=color4, lwd=4, main="ROC Curve Stack glm")
-  plot(get(paste0('roc_object_stack_rf', suffix)), col=color4, lwd=4, main="ROC Curve Stack rf")
-  plot(get(paste0('roc_object_stack_xgbTree', suffix)), col=color4, lwd=4, main="ROC Curve Stack xgbTree")
+  # plot(get(paste0('roc_object_stack_glm', suffix)), col=color4, lwd=4, main="ROC Curve Stack glm")
+  # plot(get(paste0('roc_object_stack_rf', suffix)), col=color4, lwd=4, main="ROC Curve Stack rf")
+  # plot(get(paste0('roc_object_stack_xgbTree', suffix)), col=color4, lwd=4, main="ROC Curve Stack xgbTree")
   
   # Density Plot
   prob_glm <- data.frame(No = get(paste0('pred_glm_stack_prob', suffix)), Yes = 1 - get(paste0('pred_glm_stack_prob', suffix)))
@@ -384,20 +384,20 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
 
   
   # Confusion Matrix
-  cm_glm <- confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_glm']), as.factor(valid_set[, c(target)]))
-  cm_plot_glm <- fourfoldplot(cm_glm$table)
-  assign(paste0('cm_plot_stack_glm', suffix), cm_plot_glm, envir = .GlobalEnv)
-  get(paste0('cm_plot_stack_glm', suffix))
+  assign(paste0('cm_glm', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_glm']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  # cm_plot_glm <- fourfoldplot(cm_glm$table)
+  # assign(paste0('cm_plot_stack_glm', suffix), cm_plot_glm, envir = .GlobalEnv)
+  # get(paste0('cm_plot_stack_glm', suffix))
   
-  cm_glm <- confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_rf']), as.factor(valid_set[, c(target)]))
-  cm_plot_glm <- fourfoldplot(cm_glm$table)
-  assign(paste0('cm_plot_stack_rf', suffix), cm_plot_glm, envir = .GlobalEnv)
-  get(paste0('cm_plot_stack_rf', suffix))
+  assign(paste0('cm_glm', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_rf']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  # cm_plot_glm <- fourfoldplot(cm_glm$table)
+  # assign(paste0('cm_plot_stack_rf', suffix), cm_plot_glm, envir = .GlobalEnv)
+  # get(paste0('cm_plot_stack_rf', suffix))
   
-  cm_glm <- confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree']), as.factor(valid_set[, c(target)]))
-  cm_plot_glm <- fourfoldplot(cm_glm$table)
-  assign(paste0('cm_plot_stack_xgbTree', suffix), cm_plot_glm, envir = .GlobalEnv)
-  get(paste0('cm_plot_stack_xgbTree', suffix))
+  assign(paste0('cm_glm', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  # cm_plot_glm <- fourfoldplot(cm_glm$table)
+  # assign(paste0('cm_plot_stack_xgbTree', suffix), cm_plot_glm, envir = .GlobalEnv)
+  # get(paste0('cm_plot_stack_xgbTree', suffix))
   
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(
