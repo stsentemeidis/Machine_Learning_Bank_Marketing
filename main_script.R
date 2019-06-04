@@ -26,6 +26,7 @@ source('scripts/split_n_preproc.R')
 source('scripts/model_glm.R')
 source('scripts/model_xgbTree.R')
 source('scripts/model_ranger.R')
+source('scripts/model_stacking.R')
 
 # Parameters of Baseline ----
 source('scripts/param_modeling.R')
@@ -118,6 +119,15 @@ source('scripts/featsel_rfe.R')
 # calculate <- FALSE
 # source('scripts/model_tuning_xgb.R')
 #
+
+# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
+                valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
+                trControl = fitControl, tuneGrid = NULL,
+                suffix = 'baseline', calculate = FALSE, seed = seed,
+                n_cores = detectCores()-1)
+
+
 # Save RData for RMarkdown ----
 save(
   list = c(
@@ -133,6 +143,15 @@ save(
     'opt_nb_clusters',
     'silhouette_9',
     'kmeans_9'
+    'roc_object_glm_baseline',
+    'roc_object_ranger_baseline',
+    'roc_object_xgb_baseline',
+    'cm_plot_glm_baseline',
+    'cm_plot_ranger_baseline',
+    'cm_plot_xgb_baseline',
+    'density_plot_glm_baseline',
+    'density_plot_ranger_baseline',
+    'density_plot_xgb_baseline'
   ),
   file = 'data_output/RMarkdown_Objects.RData'
 )

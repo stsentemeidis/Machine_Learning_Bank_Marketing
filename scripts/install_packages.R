@@ -5,6 +5,7 @@
 packages_list <- c(
   'Amelia',
   'data.table',
+  'pROC',
   'ggthemes',
   'dplyr',
   'tibble',
@@ -34,7 +35,20 @@ packages_list <- c(
   'tufte',
   'flexclust',
   'factoextra'
+  'caretEnsemble'
 )
+
+# Palette Colour
+color1 = 'white'
+color2 = 'black'
+color3 = 'black'
+color4 = 'darkturquoise'
+font1 = 'Impact'
+font2 = 'Helvetica'
+BarFillColor <- "#330066"
+HBarFillColor <- "#000099"
+BarLineColor <- "#FFFAFA"
+MissingColor <- "#FF6666"
 
 for (i in packages_list) {
   if (!i %in% installed.packages()) {
@@ -54,3 +68,4 @@ print(paste0(
   'm]: '), ''),
   'All necessary packages installed and loaded'
 ))
+
