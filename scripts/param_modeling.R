@@ -69,7 +69,7 @@ print(paste0(
 ranger_grid = expand.grid(
   mtry = c(1, 2, 3, 4, 5, 6, 7, 10),
   splitrule = c('gini'),
-  min.node.size = c(1, 3, 5)
+  min.node.size = c(5, 6, 7, 8, 9, 10)
 )
 
 
@@ -78,7 +78,7 @@ nrounds = 1000
 
 xgb_grid = expand.grid(
   nrounds = seq(from = 200, to = nrounds, by = 100),
-  max_depth = c(2, 3, 4, 5, 6),
+  max_depth = c(5, 6, 7, 8, 9),
   eta = c(0.025, 0.05, 0.1, 0.2, 0.3),
   gamma = 0,
   colsample_bytree = 1,
