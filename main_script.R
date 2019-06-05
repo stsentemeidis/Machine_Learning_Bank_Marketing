@@ -133,13 +133,36 @@ pipeline_ranger(target = 'y', train_set = bank_train_A_rfe,
                  suffix = 'Tuning', calculate = FALSE, seed = seed,
                  n_cores = detectCores()-1)
 
-# # Baseline Stacking Logistic Regression | Ranger | xgbTree ----
-# pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
-#                 valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
-#                 trControl = fitControl, tuneGrid = NULL,
-#                 suffix = 'baseline', calculate = FALSE, seed = seed,
-#                 n_cores = detectCores()-1)
+# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
+                valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
+                trControl = fitControl, tuneGrid = NULL,
+                suffix = 'baseline', calculate = FALSE, seed = seed,
+                n_cores = detectCores()-1)
 
+# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+pipeline_stack(target = 'y', train_set = bank_train_A_FE1,
+               valid_set = bank_train_B_FE1, test_set = bank_test_FE1,
+               trControl = fitControl, tuneGrid = NULL,
+               suffix = 'clustering', calculate = FALSE, seed = seed,
+               n_cores = detectCores()-1)
+
+# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+pipeline_stack(target = 'y', train_set = bank_train_A_FE2,
+               valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
+               trControl = fitControl, tuneGrid = NULL,
+               suffix = 'binning', calculate = FALSE, seed = seed,
+               n_cores = detectCores()-1)
+
+# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+pipeline_stack(target = 'y', train_set = bank_train_A_rfe,
+               valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
+               trControl = fitControl, tuneGrid = NULL,
+               suffix = 'Tuning', calculate = FALSE, seed = seed,
+               n_cores = detectCores()-1)
+
+# Creating the table with the sensitivities for different thresholds
+source('scripts/sensitivity_thresholds.R')
 
 # Save RData for RMarkdown ----
 save(
@@ -160,14 +183,75 @@ save(
     'roc_object_ranger_baseline',
     'roc_object_xgbTree_baseline',
     'cm_glm_baseline',
+    'cm_glm_binning',
+    'cm_glm_clustering',
+    'cm_glm_FE1 Clustering',
+    'cm_glm_FE2 Binning',
+    'cm_glm_RFE',
+    'cm_glm_Tuning',
     'cm_ranger_baseline',
+    'cm_ranger_FE1 Clustering',
+    'cm_ranger_FE2 Binning',
+    'cm_ranger_Tuning',
     'cm_xgbTree_baseline',
+    'cm_xgbTree_FE1 Clustering',
+    'cm_xgbTree_FE2 Binning',
+    'cm_xgbTree_RFE',
+    'cm_xgbTree_Tuning',
     'density_plot_glm_baseline',
+    'density_plot_glm_FE1 Clustering',
+    'density_plot_glm_FE2 Binning',
+    'density_plot_glm_RFE',
     'density_plot_ranger_baseline',
+    'density_plot_ranger_FE1 Clustering',
+    'density_plot_ranger_FE2 Binning',
+    'density_plot_ranger_Tuning',
     'density_plot_xgbTree_baseline',
+    'density_plot_xgbTree_FE1 Clustering',
+    'density_plot_xgbTree_FE2 Binning',
+    'density_plot_xgbTree_RFE',
+    'density_plot_xgbTree_Tuning',
+    'density_plot_stack_glm_baseline',
+    'density_plot_stack_glm_binning',
+    'density_plot_stack_glm_clustering',
+    'density_plot_stack_glm_Tuning',
+    'density_plot_stack_rf_baseline',
+    'density_plot_stack_rf_binning',
+    'density_plot_stack_rf_clustering',
+    'density_plot_stack_rf_Tuning',
+    'density_plot_stack_xgbTree_baseline',
+    'density_plot_stack_xgbTree_binning',
+    'density_plot_stack_xgbTree_clustering',
+    'density_plot_stack_xgbTree_Tuning',
+    'roc_object_glm_baseline',
+    'roc_object_glm_FE1 Clustering',
+    'roc_object_glm_FE2 Binning',
+    'roc_object_glm_RFE',
+    'roc_object_ranger_baseline',
+    'roc_object_ranger_FE1 Clustering',
+    'roc_object_ranger_FE2 Binning',
+    'roc_object_ranger_Tuning',
+    'roc_object_stack_glm_baseline',
+    'roc_object_stack_glm_binning',
+    'roc_object_stack_glm_clustering',
+    'roc_object_stack_glm_Tuning',
+    'roc_object_stack_rf_baseline',
+    'roc_object_stack_rf_binning',
+    'roc_object_stack_rf_clustering',
+    'roc_object_stack_rf_Tuning',
+    'roc_object_stack_xgbTree_baseline',
+    'roc_object_stack_xgbTree_binning',
+    'roc_object_stack_xgbTree_clustering',
+    'roc_object_stack_xgbTree_Tuning',
+    'roc_object_xgbTree_baseline',
+    'roc_object_xgbTree_FE1 Clustering',
+    'roc_object_xgbTree_FE2 Binning',
+    'roc_object_xgbTree_RFE',
+    'roc_object_xgbTree_Tuning',
     'varsSelected',
     'varsNotSelected',
-    'var_sel_rfe'
+    'var_sel_rfe',
+    'sensitivity_thresholds'
   ),
   file = 'data_output/RMarkdown_Objects.RData'
 )
