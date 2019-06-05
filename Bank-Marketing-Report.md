@@ -395,12 +395,6 @@ Train Time (min)
 
 </th>
 
-<th style="text-align:right;">
-
-File
-
-</th>
-
 </tr>
 
 </thead>
@@ -418,37 +412,37 @@ baseline
 
 <td style="text-align:right;">
 
-0.903912622701507
+0.9039126
 
 </td>
 
 <td style="text-align:right;">
 
-<span style=" font-weight: bold;    color: white !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(33, 144, 140, 1) !important;font-size: 12px;">0.977478886456053</span>
+<span style="     color: ghostwhite !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(241, 229, 29, 1) !important;font-size: 11px;">0.9774789</span>
 
 </td>
 
 <td style="text-align:right;">
 
-0.918982502573151
+0.9189825
 
 </td>
 
 <td style="text-align:right;">
 
-0.977478886456053
+0.9774789
 
 </td>
 
 <td style="text-align:right;">
 
-0.94732853353543
+0.9473285
 
 </td>
 
 <td style="text-align:right;">
 
-0.792824584619909
+0.7928246
 
 </td>
 
@@ -461,12 +455,6 @@ baseline
 <td style="text-align:right;">
 
 0.5
-
-</td>
-
-<td style="text-align:right;">
-
-fit\_glm\_baseline
 
 </td>
 
@@ -483,38 +471,37 @@ baseline
 
 <td style="text-align:right;">
 
-0.914420019355731
+0.9144200
 
 </td>
 
 <td style="text-align:right;">
 
-<span style="     color: ghostwhite !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(87, 198, 102, 1) !important;font-size: 11px;">0.96840788238974
-</span>
+<span style="     color: ghostwhite !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(87, 198, 102, 1) !important;font-size: 11px;">0.9684079</span>
 
 </td>
 
 <td style="text-align:right;">
 
-0.936904221516114
+0.9369042
 
 </td>
 
 <td style="text-align:right;">
 
-0.96840788238974
+0.9684079
 
 </td>
 
 <td style="text-align:right;">
 
-0.95239560101515
+0.9523956
 
 </td>
 
 <td style="text-align:right;">
 
-0.806593136399083
+0.8065931
 
 </td>
 
@@ -527,12 +514,6 @@ baseline
 <td style="text-align:right;">
 
 25.3
-
-</td>
-
-<td style="text-align:right;">
-
-fit\_xgbTree\_baseline
 
 </td>
 
@@ -549,37 +530,37 @@ baseline
 
 <td style="text-align:right;">
 
-0.911240149315637
+0.9112401
 
 </td>
 
 <td style="text-align:right;">
 
-<span style="     color: ghostwhite !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(241, 229, 29, 1) !important;font-size: 11px;">0.963246793869252</span>
+<span style=" font-weight: bold;    color: white !important;border-radius: 4px; padding-right: 4px; padding-left: 4px; background-color: rgba(33, 144, 140, 1) !important;font-size: 12px;">0.9632468</span>
 
 </td>
 
 <td style="text-align:right;">
 
-0.938014011574779
+0.9380140
 
 </td>
 
 <td style="text-align:right;">
 
-0.963246793869252
+0.9632468
 
 </td>
 
 <td style="text-align:right;">
 
-0.950462962962963
+0.9504630
 
 </td>
 
 <td style="text-align:right;">
 
-0.79284508674691
+0.7928451
 
 </td>
 
@@ -592,12 +573,6 @@ baseline
 <td style="text-align:right;">
 
 75.3
-
-</td>
-
-<td style="text-align:right;">
-
-fit\_ranger\_baseline
 
 </td>
 
