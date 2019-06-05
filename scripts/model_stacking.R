@@ -51,21 +51,25 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
                  y = train_set[, target],
                  trControl = control,
                  tuneList=list(
-                   xgbTree = caretModelSpec(method="xgbTree", tuneGrid=data.frame(nrounds = 500,
-                                                                                  max_depth = 5,
+                   xgbTree = caretModelSpec(method="xgbTree", tuneGrid=data.frame(nrounds = 200, 
+                                                                                  max_depth = 6,
                                                                                   gamma = 0,
                                                                                   eta = 0.05,
                                                                                   colsample_bytree = 1,
                                                                                   min_child_weight = 3,
                                                                                   subsample = 1)),
-                   ranger  = caretModelSpec(method="ranger",    tuneGrid=data.frame(mtry = 7,
+                   ranger  = caretModelSpec(method="ranger",    tuneGrid=data.frame(mtry = 4,
                                                                                     splitrule = "gini",
-                                                                                    min.node.size = 5)),
-                   glmnet  = caretModelSpec(method="glmnet",    tuneGrid=data.frame(alpha=c(0.05,0.1,0.5),
-                                                                                    lambda=c(0.001,0.1,0.5)))),
+                                                                                    min.node.size = 9)),
+                   glm  = caretModelSpec(method="glm")),
                  continue_on_fail = FALSE,
                  preProcess = c('center','scale'))
       , envir = .GlobalEnv) 
+    
+    # Baseline (25, gini, 1 \\ 150, 3, 0.3, 0.8, 0.75)
+    # Clustering (29, gini, 1 \\ 150, 3, 0.4, 0.8, 1)
+    # Bining (73, gini, 1 \\ 100, 3, 0.3, 0.6, 1)
+    
     
     # Save model list
     time_fit_end <- Sys.time()
@@ -139,17 +143,17 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
   assign(paste0('pred_glm_stack', suffix),
          predict(get(paste0('fit_stack_glm', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_glm_stack_prob', suffix), get(paste0('pred_glm_stack', suffix)), envir = .GlobalEnv)
-  assign(paste0('pred_glm_stack', suffix), ifelse(get(paste0('pred_glm_stack', suffix)) > 0.5, 1, 0), envir = .GlobalEnv)
+  assign(paste0('pred_glm_stack', suffix), ifelse(get(paste0('pred_glm_stack', suffix)) > 0.5, yes = 1,no = 0), envir = .GlobalEnv)
   
   assign(paste0('pred_rf_stack', suffix),
          predict(get(paste0('fit_stack_rf', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_rf_stack_prob', suffix), get(paste0('pred_rf_stack', suffix)), envir = .GlobalEnv)
-  assign(paste0('pred_rf_stack', suffix), ifelse(get(paste0('pred_rf_stack', suffix)) > 0.5, 1, 0), envir = .GlobalEnv)
+  assign(paste0('pred_rf_stack', suffix), ifelse(get(paste0('pred_rf_stack', suffix)) > 0.5, yes = 1,no = 0), envir = .GlobalEnv)
   
   assign(paste0('pred_xgbTree_stack', suffix),
          predict(get(paste0('fit_stack_xgbTree', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_xgbTree_stack_prob', suffix), get(paste0('pred_xgbTree_stack', suffix)), envir = .GlobalEnv)
-  assign(paste0('pred_xgbTree_stack', suffix), ifelse(get(paste0('pred_xgbTree_stack', suffix)) > 0.5, 1, 0), envir = .GlobalEnv)
+  assign(paste0('pred_xgbTree_stack', suffix), ifelse(get(paste0('pred_xgbTree_stack', suffix)) > 0.5,yes =  1,no =  0), envir = .GlobalEnv)
   
   # Compare Predictions and Valid Set
   valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
@@ -166,13 +170,13 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
            rbind(   cbind(
                    'Accuracy' = Accuracy(y_pred = get(paste0('pred_glm_stack', suffix)),
                                          y_true = valid_set[,target]),
-                   'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_glm_stack', suffix)),
+                   'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_glm_stack', suffix)),positive = '1',
                                                y_true = valid_set[,target]),
-                   'Precision' = Precision(y_pred = get(paste0('pred_glm_stack', suffix)),
+                   'Precision' = Precision(y_pred = get(paste0('pred_glm_stack', suffix)),positive = '1',
                                            y_true = valid_set[,target]),
-                   'Recall' = Recall(y_pred = get(paste0('pred_glm_stack', suffix)),
+                   'Recall' = Recall(y_pred = get(paste0('pred_glm_stack', suffix)),positive = '1',
                                      y_true = valid_set[,target]),
-                   'F1 Score' = F1_Score(y_pred = get(paste0('pred_glm_stack', suffix)),
+                   'F1 Score' = F1_Score(y_pred = get(paste0('pred_glm_stack', suffix)),positive = '1',
                                          y_true = valid_set[,target]),
                    'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_glm_stack', suffix))))),
                    'Coefficients' = length(get(paste0('fit_stack_glm', suffix))$ens_model$finalModel$coefficients),
@@ -184,13 +188,13 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
                    cbind(
                    'Accuracy' = Accuracy(y_pred = get(paste0('pred_rf_stack', suffix)),
                                          y_true = valid_set[,target]),
-                   'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_rf_stack', suffix)),
+                   'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_rf_stack', suffix)),positive = '1',
                                                y_true = valid_set[,target]),
-                   'Precision' = Precision(y_pred = get(paste0('pred_rf_stack', suffix)),
+                   'Precision' = Precision(y_pred = get(paste0('pred_rf_stack', suffix)),positive = '1',
                                            y_true = valid_set[,target]),
-                   'Recall' = Recall(y_pred = get(paste0('pred_rf_stack', suffix)),
+                   'Recall' = Recall(y_pred = get(paste0('pred_rf_stack', suffix)),positive = '1',
                                      y_true = valid_set[,target]),
-                   'F1 Score' = F1_Score(y_pred = get(paste0('pred_rf_stack', suffix)),
+                   'F1 Score' = F1_Score(y_pred = get(paste0('pred_rf_stack', suffix)),positive = '1',
                                          y_true = valid_set[,target]),
                    'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_rf_stack', suffix))))),
                    'Coefficients' = length(get(paste0('fit_stack_rf', suffix))$ens_model$finalModel$num.trees),
@@ -202,13 +206,13 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
                    ,cbind(
                    'Accuracy' = Accuracy(y_pred = get(paste0('pred_xgbTree_stack', suffix)),
                                          y_true = valid_set[,target]),
-                   'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_xgbTree_stack', suffix)),
+                   'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_xgbTree_stack', suffix)),positive = '1',
                                                y_true = valid_set[,target]),
-                   'Precision' = Precision(y_pred = get(paste0('pred_xgbTree_stack', suffix)),
+                   'Precision' = Precision(y_pred = get(paste0('pred_xgbTree_stack', suffix)),positive = '1',
                                            y_true = valid_set[,target]),
-                   'Recall' = Recall(y_pred = get(paste0('pred_xgbTree_stack', suffix)),
+                   'Recall' = Recall(y_pred = get(paste0('pred_xgbTree_stack', suffix)),positive = '1',
                                      y_true = valid_set[,target]),
-                   'F1 Score' = F1_Score(y_pred = get(paste0('pred_xgbTree_stack', suffix)),
+                   'F1 Score' = F1_Score(y_pred = get(paste0('pred_xgbTree_stack', suffix)),positive = '1',
                                          y_true = valid_set[,target]),
                    'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_xgbTree_stack', suffix))))),
                    'Coefficients' = length(get(paste0('fit_stack_xgbTree', suffix))$ens_model$finalModel$params$max_depth),
@@ -289,30 +293,30 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
   assign(paste0('real_results', suffix), as.data.frame(rbind(
     cbind(
     'Accuracy' = Accuracy(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)])),
-    'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)])),
-    'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)])),
-    'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)])),
-    'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)])),
+    'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+    'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+    'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+    'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_glm']))),
     'Coefficients' = length(get(paste0('fit_stack_glm', suffix))$ens_model$finalModel$coefficients),
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_stack', suffix)), units = 'mins'), 1)),
 
     cbind(
       'Accuracy' = Accuracy(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)])),
-      'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)])),
-      'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)])),
-      'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)])),
-      'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)])),
+      'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+      'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+      'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+      'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
       'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_rf']))),
       'Coefficients' = length(get(paste0('fit_stack_rf', suffix))$ens_model$finalModel$num.trees),
       'Train Time (min)' = round(as.numeric(get(paste0('time_fit_stack', suffix)), units = 'mins'), 1)),
       
     cbind(
       'Accuracy' = Accuracy(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)])),
-      'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)])),
-      'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)])),
-      'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)])),
-      'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)])),
+      'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+      'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+      'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+      'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
       'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree']))),
       'Coefficients' = length(get(paste0('fit_stack_xgbTree', suffix))$finalModel$params$max_depth),
       'Train Time (min)' = round(as.numeric(get(paste0('time_fit_stack', suffix)), units = 'mins'), 1)
@@ -403,5 +407,5 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
     ifelse(exists('start_time'), paste0('[', round(
       difftime(Sys.time(), start_time, units = 'mins'), 1
     ), 'm]: '), ''),
-    'Stacking with is done!', ifelse(is.null(suffix), NULL, paste0(' ', substr(suffix,2, nchar(suffix))))))
+    'Stacking with done!', ifelse(is.null(suffix), NULL, paste0(' ', substr(suffix,2, nchar(suffix))))))
 }
