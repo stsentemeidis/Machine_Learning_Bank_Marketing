@@ -51,8 +51,10 @@ ui <- dashboardPage(skin = 'black',
                         
                         fluidRow(
                             valueBoxOutput("sensibility"),
-                            valueBoxOutput("accuracy")
-                            # valueBoxOutput("users")
+                            valueBoxOutput("accuracy"),
+                            valueBoxOutput("precision"),
+                            valueBoxOutput("recall"),
+                            valueBoxOutput("f1")
                         ),
                         
                         fluidRow(
@@ -62,6 +64,12 @@ ui <- dashboardPage(skin = 'black',
                             box(title = 'ROC Curve',
                                 status = 'info',
                                 plotOutput('roc', height = 250))
+                        ),
+                        fluidRow(
+                            box(title = 'Density Plot',
+                                status = 'info',
+                                plotOutput('dens_plot', width = 12)
+                            )
                         )
                     )
 )
@@ -87,7 +95,34 @@ server <- function(input, output) {
             value = round(results[rownames(results) == input$model, 'Accuracy'], 5),
             subtitle = "Accuracy",
             color = 'teal',
+            icon = icon("expand")
+        )
+    })
+    
+    output$precision <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'Precision'], 5),
+            subtitle = "Precision",
+            color = 'yellow',
             icon = icon("crosshairs")
+        )
+    })
+    
+    output$recall <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'Recall'], 5),
+            subtitle = "Recall",
+            color = 'yellow',
+            icon = icon("angle-double-left")
+        )
+    })
+    
+    output$f1 <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'F1 Score'], 5),
+            subtitle = "F1 Score",
+            color = 'yellow',
+            icon = icon("flag-checkered")
         )
     })
     
@@ -99,6 +134,11 @@ server <- function(input, output) {
     output$roc <- renderPlot({
         data <- get(paste0(file_list[rownames(file_list) == input$model, 'roc']))
         plot(data , lwd=4)
+    })
+    
+    output$dens_plot <- renderPlot({
+        data <- get(paste0(file_list[rownames(file_list) == input$model, 'density']))
+        data
     })
     
 }

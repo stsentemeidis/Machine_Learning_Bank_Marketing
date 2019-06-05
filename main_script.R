@@ -158,18 +158,21 @@ save(
     'kmeans_9',
     'roc_object_glm_baseline',
     'roc_object_ranger_baseline',
-    'roc_object_xgb_baseline',
+    'roc_object_xgbTree_baseline',
     'cm_glm_baseline',
     'cm_ranger_baseline',
-    'cm_xgb_baseline',
+    'cm_xgbTree_baseline',
     'density_plot_glm_baseline',
     'density_plot_ranger_baseline',
-    'density_plot_xgb_baseline'
+    'density_plot_xgbTree_baseline',
+    'varsSelected',
+    'varsNotSelected',
+    'var_sel_rfe'
   ),
   file = 'data_output/RMarkdown_Objects.RData'
 )
 
-# save.image(file = 'data_output/ALL.RData')
+save.image(file = 'data_output/ALL.RData')
 
 # Save files for ShinyApps
 saveRDS(bank_train, file = 'shinyapps/plot_eda/data/bank_train.rds')

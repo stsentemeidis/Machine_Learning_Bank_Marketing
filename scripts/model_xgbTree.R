@@ -78,11 +78,27 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
   assign(paste0('pred_xgbTree', suffix),
          predict(get(paste0('fit_xgbTree', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_xgbTree_prob', suffix), get(paste0('pred_xgbTree', suffix)), envir = .GlobalEnv)
-  assign(paste0('pred_xgbTree', suffix), get(paste0('pred_xgbTree_prob', suffix))$No, envir = .GlobalEnv)
-  assign(paste0('pred_xgbTree', suffix), ifelse(get(paste0('pred_xgbTree', suffix)) > 0.5, 0, 1), envir = .GlobalEnv)
+  assign(paste0('pred_xgbTree', suffix), get(paste0('pred_xgbTree_prob', suffix))$Yes, envir = .GlobalEnv)
+  assign(paste0('pred_xgbTree', suffix), ifelse(get(paste0('pred_xgbTree', suffix)) > 0.5, no = 0, yes = 1), envir = .GlobalEnv)
+  
+  # Storing Sensitivity for different thresholds
+  sens_temp <- data.frame(rbind(rep_len(0, length(seq(from = 0.05, to = 1, by = 0.05)))))
+  temp_cols <- c()
+  for (t in seq(from = 0.05, to = 1, by =0.05)){
+    temp_cols <- cbind(temp_cols, paste0('t_', format(t, nsmall=2)))
+  }
+  colnames(sens_temp) <- temp_cols
+  valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
+  
+  for (t in seq(from = 0.05, to = 1, by = 0.05)){
+    assign(paste0('tres_pred_xgbTree', suffix, '_', format(t, nsmall=2)), ifelse(get(paste0('pred_xgbTree_prob', suffix))$Yes > t, no = 0, yes = 1), envir = .GlobalEnv)
+    sens_temp[, paste0('t_', format(t, nsmall=2))] <- Sensitivity(y_pred = get(paste0('tres_pred_xgbTree', suffix, '_', format(t, nsmall=2))),
+                                                                  y_true = valid_set[,target], positive = '1')
+    
+  }  
+  assign(paste0('sens_temp_xgbTree', suffix), sens_temp, envir = .GlobalEnv)
   
   # Compare Predictions and Valid Set
-  valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
   assign(paste0('comp_xgbTree', suffix),
          data.frame(obs = valid_set[,target],
                     pred = get(paste0('pred_xgbTree', suffix))), envir = .GlobalEnv)
@@ -94,13 +110,13 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
              cbind('Accuracy' = Accuracy(y_pred = get(paste0('pred_xgbTree', suffix)),
                                          y_true = valid_set[,target]),
              'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_xgbTree', suffix)),
-                                         y_true = valid_set[,target]),
+                                         y_true = valid_set[,target], positive = '1'),
              'Precision' = Precision(y_pred = get(paste0('pred_xgbTree', suffix)),
-                                     y_true = valid_set[,target]),
+                                     y_true = valid_set[,target], positive = '1'),
              'Recall' = Recall(y_pred = get(paste0('pred_xgbTree', suffix)),
-                               y_true = valid_set[,target]),
+                               y_true = valid_set[,target], positive = '1'),
              'F1 Score' = F1_Score(y_pred = get(paste0('pred_xgbTree', suffix)),
-                                   y_true = valid_set[,target]),
+                                   y_true = valid_set[,target], positive = '1'),
              'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_xgbTree', suffix))))),
              'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,
              'Train Time (min)' = round(as.numeric(get(paste0('time_fit_xgbTree', suffix)), units = 'mins'), 1),
@@ -165,10 +181,10 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
 
   assign(paste0('real_results', suffix), as.data.frame(cbind(
     'Accuracy' = Accuracy(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
-    'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
-    'Precision' = Precision(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
-    'Recall' = Recall(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
-    'F1 Score' = F1_Score(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
+    'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
+    'Precision' = Precision(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
+    'Recall' = Recall(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
+    'F1 Score' = F1_Score(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]))),
     'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_xgbTree', suffix)), units = 'mins'), 1)
