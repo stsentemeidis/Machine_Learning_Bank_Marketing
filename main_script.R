@@ -169,12 +169,26 @@ save(
   file = 'data_output/RMarkdown_Objects.RData'
 )
 
-save.image(file = 'data_output/ALL.RData')
+# save.image(file = 'data_output/ALL.RData')
+
+# Save files for ShinyApps
+saveRDS(bank_train, file = 'shinyapps/plot_eda/data/bank_train.rds')
+saveRDS(all_real_results, file = 'shinyapps/model_dash/data/all_real_results.rds')
+saveRDS(file_list, file = 'shinyapps/model_dash/data/file_list.rds')
+
+m=1
+for (m in seq(nrow(file_list))){
+  # saveRDS(get(paste0(file_list[m, 'model_file'])), file = paste0('shinyapps/model_dash/data/', file_list[m, 'model_file'], '.rds'))
+  saveRDS(get(paste0(file_list[m, 'cm_file'])), file = paste0('shinyapps/model_dash/data/', file_list[m, 'cm_file'], '.rds'))
+  saveRDS(get(paste0(file_list[m, 'roc'])), file = paste0('shinyapps/model_dash/data/', file_list[m, 'roc'], '.rds'))
+  saveRDS(get(paste0(file_list[m, 'density'])), file = paste0('shinyapps/model_dash/data/', file_list[m, 'density'], '.rds'))
+}
 
 print(paste0('[', round(
   difftime(Sys.time(), start_time, units = 'mins'), 1
 ), 'm]: ',
 'All operations are over!'))
+
 
 # Render RMarkdown Report ----
 if (is.null(webshot:::find_phantom())) {

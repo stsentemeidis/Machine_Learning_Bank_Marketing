@@ -183,7 +183,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     assign('all_real_results', all_real_results, envir = .GlobalEnv)
   }
   
-  # PLOT ROC
+  # Plot ROC
   roc_glm <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_glm_valid', suffix))[, target]))
   assign(paste0('roc_object_glm', suffix), roc_glm,  envir = .GlobalEnv)
   # plot(get(paste0('roc_object_glm', suffix)), col=color4, lwd=4, main="ROC Curve GLM")
@@ -209,6 +209,25 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
   # assign(paste0('cm_plot_glm', suffix), cm_plot_glm, envir = .GlobalEnv)
   # get(paste0('cm_plot_glm', suffix))
 
+  # List of files for Dashboard
+  assign(paste0('files', suffix), as.data.frame(cbind(
+    'model_file' = paste0('fit_glm', suffix),
+    'cm_file' = paste0('cm_glm', suffix),
+    'roc' = paste0('roc_object_glm', suffix),
+    'density' = paste0('density_plot_glm', suffix)
+  )), envir = .GlobalEnv)
+
+    if (exists('file_list')){
+    assign('file_list', rbind(file_list, 'model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  } else{
+    assign('file_list', rbind('model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  }
+  
+  
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(
       difftime(Sys.time(), start_time, units = 'mins'), 1

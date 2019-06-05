@@ -74,7 +74,7 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   
   # Predicting against Valid Set with transformed target
   assign(paste0('pred_ranger', suffix),
-         predict(get(paste0('fit_ranger', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
+         predict(get(paste0('fit_ranger', suffix)), newdata = valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_ranger_prob', suffix), get(paste0('pred_ranger', suffix)), envir = .GlobalEnv)
   assign(paste0('pred_ranger', suffix), get(paste0('pred_ranger_prob', suffix))$No, envir = .GlobalEnv)
   assign(paste0('pred_ranger', suffix), ifelse(get(paste0('pred_ranger', suffix)) > 0.5, 0, 1), envir = .GlobalEnv)
@@ -99,8 +99,8 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
                                y_true = valid_set[,target]),
              'F1 Score' = F1_Score(y_pred = get(paste0('pred_ranger', suffix)),
                                    y_true = valid_set[,target]),
-             'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
              'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_ranger', suffix))))),
+             'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
              'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1),
              'CV | Accuracy' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'Accuracy'],
              'CV | Kappa' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'Kappa'],
@@ -170,7 +170,8 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
     'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
-  
+
+    
   # Generate all_real_results table with original target
   if (exists('all_real_results')){
     assign('all_real_results', rbind(all_real_results, results_title = get(paste0('real_results', suffix))), envir = .GlobalEnv)
@@ -182,8 +183,7 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
     assign('all_real_results', all_real_results, envir = .GlobalEnv)
   }
   
-  
-  # PLOT ROC
+  # Plot ROC
   roc_ranger <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_ranger_valid', suffix))[, target]))
   assign(paste0('roc_object_ranger', suffix), roc_ranger,  envir = .GlobalEnv)
   # plot(get(paste0('roc_object_ranger', suffix)), col=color4, lwd=4, main="ROC Curve Ranger")
@@ -207,6 +207,26 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   # cm_plot_ranger <- fourfoldplot(cm_ranger$table)
   # assign(paste0('cm_plot_ranger', suffix), cm_plot_ranger, envir = .GlobalEnv)
   # get(paste0('cm_plot_ranger', suffix))
+  
+  
+  # List of files for Dashboard
+  assign(paste0('files', suffix), as.data.frame(cbind(
+    'model_file' = paste0('fit_ranger', suffix),
+    'cm_file' = paste0('cm_ranger', suffix),
+    'roc' = paste0('roc_object_ranger', suffix),
+    'density' = paste0('density_plot_ranger', suffix)
+  )), envir = .GlobalEnv)
+  
+  if (exists('file_list')){
+    assign('file_list', rbind(file_list, 'model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  } else{
+    assign('file_list', rbind('model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  }
+  
   
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(
