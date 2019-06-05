@@ -8,9 +8,9 @@ set.seed(seed)
 
 
 pipeline_ranger <- function(target, train_set, valid_set, test_set,
-                         trControl = NULL, tuneGrid = NULL,
-                         suffix = NULL, calculate = FALSE, seed = 2019,
-                         n_cores = 1){
+                            trControl = NULL, tuneGrid = NULL,
+                            suffix = NULL, calculate = FALSE, seed = 2019,
+                            n_cores = 1){
   
   # Define objects suffix
   suffix <- ifelse(is.null(suffix), NULL, paste0('_', suffix))  
@@ -77,10 +77,27 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
          predict(get(paste0('fit_ranger', suffix)), newdata = valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_ranger_prob', suffix), get(paste0('pred_ranger', suffix)), envir = .GlobalEnv)
   assign(paste0('pred_ranger', suffix), get(paste0('pred_ranger_prob', suffix))$Yes, envir = .GlobalEnv)
-  assign(paste0('pred_ranger', suffix), ifelse(get(paste0('pred_ranger', suffix)) > 0.5, no = 0,yes =  1), envir = .GlobalEnv)
+  assign(paste0('pred_ranger', suffix), ifelse(get(paste0('pred_ranger', suffix)) > 0.5, no = 0, yes = 1), envir = .GlobalEnv)
+  
+  # Storing Sensitivity for different thresholds
+  sens_temp <- data.frame(rbind(rep_len(0, length(seq(from = 0.05, to = 1, by = 0.05)))))
+  temp_cols <- c()
+  for (t in seq(from = 0.05, to = 1, by =0.05)){
+    temp_cols <- cbind(temp_cols, paste0('t_', format(t, nsmall=2)))
+  }
+  colnames(sens_temp) <- temp_cols
+  
+  valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
+  
+  for (t in seq(from = 0.05, to = 1, by = 0.05)){
+    assign(paste0('tres_pred_ranger', suffix, '_', format(t, nsmall=2)), ifelse(get(paste0('pred_ranger_prob', suffix))$Yes > t, no = 0, yes = 1), envir = .GlobalEnv)
+    sens_temp[, paste0('t_', format(t, nsmall=2))] <- Sensitivity(y_pred = get(paste0('tres_pred_ranger', suffix, '_', format(t, nsmall=2))),
+                                                                  y_true = valid_set[,target], positive = '1')
+    
+  }  
+  assign(paste0('sens_temp_ranger', suffix), sens_temp, envir = .GlobalEnv)
   
   # Compare Predictions and Valid Set
-  valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
   assign(paste0('comp_ranger', suffix),
          data.frame(obs = valid_set[,target],
                     pred = get(paste0('pred_ranger', suffix))), envir = .GlobalEnv)
@@ -91,24 +108,24 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
            rbind(
              cbind('Accuracy' = Accuracy(y_pred = get(paste0('pred_ranger', suffix)),
                                          y_true = valid_set[,target]),
-             'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_ranger', suffix)),positive = '1',
-                                         y_true = valid_set[,target]),
-             'Precision' = Precision(y_pred = get(paste0('pred_ranger', suffix)),positive = '1',
-                                     y_true = valid_set[,target]),
-             'Recall' = Recall(y_pred = get(paste0('pred_ranger', suffix)),positive = '1',
-                               y_true = valid_set[,target]),
-             'F1 Score' = F1_Score(y_pred = get(paste0('pred_ranger', suffix)),positive = '1',
-                                   y_true = valid_set[,target]),
-             'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_ranger', suffix))))),
-             'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
-             'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1),
-             'CV | Accuracy' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'Accuracy'],
-             'CV | Kappa' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'Kappa'],
-             'CV | AccuracySD' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'AccuracySD'],
-             'CV | KappaSD' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'KappaSD']
-           )
-         ), envir = .GlobalEnv
-    )
+                   'Sensitivity' = Sensitivity(y_pred = get(paste0('pred_ranger', suffix)),
+                                               y_true = valid_set[,target], positive = '1'),
+                   'Precision' = Precision(y_pred = get(paste0('pred_ranger', suffix)),
+                                           y_true = valid_set[,target], positive = '1'),
+                   'Recall' = Recall(y_pred = get(paste0('pred_ranger', suffix)),
+                                     y_true = valid_set[,target], positive = '1'),
+                   'F1 Score' = F1_Score(y_pred = get(paste0('pred_ranger', suffix)),
+                                         y_true = valid_set[,target], positive = '1'),
+                   'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_ranger', suffix))))),
+                   'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
+                   'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1),
+                   'CV | Accuracy' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'Accuracy'],
+                   'CV | Kappa' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'Kappa'],
+                   'CV | AccuracySD' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'AccuracySD'],
+                   'CV | KappaSD' = get_best_result(get(paste0('fit_ranger', suffix)))[, 'KappaSD']
+             )
+           ), envir = .GlobalEnv
+         )
   )
   # Generate all_results table | with CV and transformed target
   results_title = paste0('Ranger', ifelse(is.null(suffix), NULL, paste0(' ', substr(suffix,2, nchar(suffix)))))
@@ -162,14 +179,15 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   
   assign(paste0('real_results', suffix), as.data.frame(cbind(
     'Accuracy' = Accuracy(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
-    'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
-    'Precision' = Precision(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
-    'Recall' = Recall(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
-    'F1 Score' = F1_Score(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+    'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
+    'Precision' = Precision(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
+    'Recall' = Recall(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
+    'F1 Score' = F1_Score(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_ranger_valid', suffix))[, target]))),
     'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
     'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
+  
   
   # Generate all_real_results table with original target
   if (exists('all_real_results')){
@@ -181,7 +199,6 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
     rownames(all_real_results) <- c(rownames(all_real_results)[-length(rownames(all_real_results))], results_title)
     assign('all_real_results', all_real_results, envir = .GlobalEnv)
   }
-  
   
   # Plot ROC
   roc_ranger <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_ranger_valid', suffix))[, target]))
@@ -207,6 +224,26 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   # cm_plot_ranger <- fourfoldplot(cm_ranger$table)
   # assign(paste0('cm_plot_ranger', suffix), cm_plot_ranger, envir = .GlobalEnv)
   # get(paste0('cm_plot_ranger', suffix))
+  
+  
+  # List of files for Dashboard
+  assign(paste0('files', suffix), as.data.frame(cbind(
+    'model_file' = paste0('fit_ranger', suffix),
+    'cm_file' = paste0('cm_ranger', suffix),
+    'roc' = paste0('roc_object_ranger', suffix),
+    'density' = paste0('density_plot_ranger', suffix)
+  )), envir = .GlobalEnv)
+  
+  if (exists('file_list')){
+    assign('file_list', rbind(file_list, 'model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  } else{
+    assign('file_list', rbind('model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  }
+  
   
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(

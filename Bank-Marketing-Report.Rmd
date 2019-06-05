@@ -198,9 +198,19 @@ The features of the dataset provide different type of information about the cust
 
 <iframe src ="http://ashomah.shinyapps.io/plot_eda" height=800px width=100% position="center" frameborder="0" />
 
-**Test set**     
-Looking at the `raw test` set which we will have to consider as our hold out dataset, we can see that the variables follow almost *similar summary results*.
+</br>
 
+A quick look at the Test Set shows that the variables follow almost similar distriutions.  
+
+
+</br>
+
+***
+
+## Analysis Method  
+
+Flowchart  
+Quick explanation  
 
 </br>
 
@@ -208,10 +218,174 @@ Looking at the `raw test` set which we will have to consider as our hold out dat
 
 ## Data Preparation  
 
+As the Test Set doesn't contain the feature `y`, it is necessary to randomly split the Train Set in two, with a 80|20 ratio:  
+
+* **Train Set A**, which will be used to train our model.  
+* **Train Set B**, which will be used to test our model and validate the performance of the model.  
+
+These datasets are centered and scaled, using the `preProcess` function of the package `caret`. These transformations should improve the performance of linear models.  
+
+Categorical variables are dummified, using the `  
 
 </br>
 
 ***
+
+## Cross-Validation Strategy  
+
+To validate the stability of our models, we will apply a 10-fold cross-validation, repeated 3 times.  
+
+</br>
+
+***
+
+## Baseline  
+
+For our baseline, we used 3 algorithms.  
+
+``` {r Baseline Results, echo=FALSE, message = FALSE, fig.align = 'center'}
+to_display <-
+  all_real_results[rownames(all_real_results) %in% c(
+    'Logistic Reg. baseline',
+    'XGBoost baseline',
+    'Ranger baseline'
+  ),]
+
+
+to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
+  rownames_to_column('Model') %>%
+  mutate(
+    Sensitivity = cell_spec(
+      format(Sensitivity, nsmall = 7),
+      color = ifelse(order(Sensitivity, decreasing = TRUE) <= 1, 'white', 'ghostwhite'),
+      font_size = ifelse(order(Sensitivity, decreasing = TRUE) <= 1, 12, 11),
+      background = spec_color(
+        order(Sensitivity, decreasing = TRUE),
+        option = 'D',
+        begin = 0.50,
+        end = 0.98,
+        direction = 1
+      ),
+      bold = ifelse(order(Sensitivity, decreasing = TRUE) <= 1, TRUE, FALSE)
+    )
+  ) %>%
+  kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
+```
+
+</br>
+
+***
+
+## Feature Engineering  
+
+FRANCESCA
+
+``` {r Feature Clustering Results, echo=FALSE, message = FALSE, fig.align = 'center'}
+to_display <-
+  all_real_results[rownames(all_real_results) %in% c(
+    'Logistic Reg. baseline',
+    'XGBoost baseline',
+    'Ranger baseline',
+    'Logistic Reg. FE1 Clustering',
+    'XGBoost FE1 Clustering',
+    'Ranger FE1 Clustering'
+  ),]
+
+to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
+  rownames_to_column('Model') %>%
+  mutate(
+    Sensitivity = cell_spec(
+      format(Sensitivity, nsmall = 7),
+      color = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, 'white', 'ghostwhite'),
+      font_size = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, 12, 11),
+      background = spec_color(
+        order(Sensitivity, decreasing = TRUE),
+        option = 'D',
+        begin = 0.50,
+        end = 0.98,
+        direction = 1
+      ),
+      bold = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, TRUE, FALSE)
+    )
+  ) %>%
+  kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
+```
+
+``` {r Feature Binning Results, echo=FALSE, message = FALSE, fig.align = 'center'}
+to_display <-
+  all_real_results[rownames(all_real_results) %in% c(
+    'Logistic Reg. baseline',
+    'XGBoost baseline',
+    'Logistic Reg. FE1 Clustering',
+    'Logistic Reg. FE2 Binning',
+    'XGBoost FE2 Binning',
+    'Ranger FE2 Binning'
+  ),]
+
+to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
+  rownames_to_column('Model') %>%
+  mutate(
+    Sensitivity = cell_spec(
+      format(Sensitivity, nsmall = 7),
+      color = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, 'white', 'ghostwhite'),
+      font_size = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, 12, 11),
+      background = spec_color(
+        order(Sensitivity, decreasing = TRUE),
+        option = 'D',
+        begin = 0.50,
+        end = 0.98,
+        direction = 1
+      ),
+      bold = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, TRUE, FALSE)
+    )
+  ) %>%
+  kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
+```
+
+</br>
+
+***
+
+## Feature Selection with Lasso and RFE  
+
+NAYLA
+
+DISPLAY VARIMP
+LIST OF DELETED VAR
+
+``` {r Lasso, echo=FALSE, message = FALSE, fig.height=8, fig.width=10, fig.align='center', collapse = TRUE}
+print(
+  paste0(
+    'The Lasso Regression selected ',
+    length(varsSelected),
+    ' variables, and rejected ',
+    length(varsNotSelected),
+    ' variables.'
+  )
+)
+
+kable(data.frame(matrix(
+  c(sort(as.vector(varsNotSelected)), '', '', ''),
+  nrow = 13, ncol = 5, byrow = TRUE
+)), 
+col.names = c('Rejected Features', '', '', '', ''),
+align = 'l') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
+```
+
+``` {r RFE Variables, echo=FALSE, message = FALSE, fig.height=8, fig.width=10, fig.align='center', collapse = TRUE}
+kable(
+  data.frame(matrix(
+    c(sort(as.vector(var_sel_rfe$Variables)), '', '', '', ''),
+    nrow = 6,
+    ncol = 5,
+    byrow = TRUE
+  )),
+  col.names = c('Selected Features', '', '', '', ''),
+  align = 'l'
+) %>%
+  kable_styling(bootstrap_options = c('hover', 'condensed'))
+```
+
 
 ## Cross-Validation Strategy  
 
@@ -222,24 +396,31 @@ To validate the stability of our models, we will apply a 10-fold cross-validatio
 
 ***
 
-## Baseline  
+## Tuning  
 
-``` {r Baseline Results, echo=FALSE, message = FALSE, fig.align = 'center'}
-all_real_results[1:3,] %>%
+``` {r Feature Tuning, echo=FALSE, message = FALSE, fig.align = 'center'}
+to_display <-
+  all_real_results[rownames(all_real_results) %in% c(
+    'Logistic Reg. baseline',
+    'Logistic Reg. FE1 Clustering',
+    'Logistic Reg. FE2 Binning'
+  ),]
+
+to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
   rownames_to_column('Model') %>%
   mutate(
     Sensitivity = cell_spec(
       format(Sensitivity, nsmall = 7),
-      color = ifelse(order(Sensitivity) <= 1, 'white', 'ghostwhite'),
-      font_size = ifelse(order(Sensitivity) <= 1, 12, 11),
+      color = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, 'white', 'ghostwhite'),
+      font_size = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, 12, 11),
       background = spec_color(
-        order(Sensitivity),
+        order(Sensitivity, decreasing = TRUE),
         option = 'D',
         begin = 0.50,
         end = 0.98,
         direction = 1
       ),
-      bold = ifelse(order(Sensitivity) <= 1, TRUE, FALSE)
+      bold = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, TRUE, FALSE)
     )
   ) %>%
   kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
@@ -306,10 +487,6 @@ Now that we have the most efficient set of variables according to our *Feature S
    *  min.node.size = 9
 
 
-</br>
-
-***
-
 ## Stacking   
 
 At this stage we have optimized our *variable set* and we have tuned our algorithms through a *Grid Search*. There is another option that we want to try and it is the **stacking models**.  As an initial step to decide whether stacking would make sense or not, we gather all our previous predictions and we plot a *correlation matrix*. The reason behind this, is the fact that if our predictions are *uncorrelated* between each other or at least have low correlation, then the models that generate them are capturing *different aspects* of the validation set, so it makes sense to combine them through a stacking approach. Based on the matrix below, the models that seem better to combine are the ones that generated the predictions based on the **binning** feature engineering step, as the correlation between them is around 50%. However, in order to have a more complete modelling approach we want to stack all the possible combinations and check their performance immediately after. More in detail we follow the below mentioned process:    
@@ -325,11 +502,7 @@ At this stage we have optimized our *variable set* and we have tuned our algorit
   *  **XGBoost**     
   *  **Random Forest**
  
-
-
-<br><br>
-
-***
+<br>
 
 ***
 
@@ -337,7 +510,7 @@ At this stage we have optimized our *variable set* and we have tuned our algorit
 
 Based on the table shown below, in which we gathered all the necessary metrics to compare our models we decide to go with the **Ranger (RandomForest) algorithm trained on the set of variables that include the Binning** step of the Feature Engineering process and is the one that we choose to create our final submission. The metric that was required is the `Sensitivity`, and was the main driver of our decision.  As a closing observation, we can notice that our models are really good in predicting the **No** target variable as we manage to achieve a high *Precision*, but they have harder times *(comparing to the NOs)* adjusting their performance on the **Yes** variable in which they perform well, at around 87% of `Recall`. We can detect that through the various confusion matrices, in which the **True Negative** value is pretty high (thing that justifies the above mentioned observation).     
 
-The overall objective of the model is to identify customers who are responsive to a campaign and will eventually purchase the product. Though the final model does feature high sensitivity (True positive rate), it also has relatively low specificity (True negative rate). This implies a lot of customers targeted by the campaign may ultimately end up rejecting the offer. Ultimately, the trade-off stands between the cost of targeting the client with the campaign, and the increased revenue from capturing the client. In this particular case, one can assume the cost of running the campaign is only a small fraction of the **Customer Life-time Value**. Therefore, it makes sense to provide **an aggressive rather than conservative model**, since the cost of the campaign may only involve customer service labor at relatively low wages. In other settings where the cost of a false positive is highler relatively to the benefit of the true positive, a more conservative option should be adopted.   
+The overall objective of the model is to identify customers who are responsive to a campaign and will eventually purchase the product. Though the final model does feature high sensitivity (True positive rate), it also has relatively low specificity (True negative rate). This implies a lot of customers targeted by the campaign may ultimately end up rejecting the offer. Ultimately, the trade-off stands between the cost of targeting the client with the campaign, and the increased revenue from capturing the client. In this particular case, one can assume the cost of running the campaign is only a small fraction of the **Customer Life-time Value**. Therefore, it makes sense to provide **an aggressive rather than conservative model**, since the cost of the campaign may only involve customer service labor at relatively low wages. In other settings where the cost of a false positive is higher relatively to the benefit of the true positive, a more conservative option should be adopted.   
    
 *   Among those that we don't call: all are not responsive anyways
 *   But among those we don't call: we have a lot of no's

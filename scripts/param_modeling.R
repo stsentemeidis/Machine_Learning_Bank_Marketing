@@ -9,6 +9,7 @@ time_fit_start <- 0
 time_fit_end <- 0
 all_results <- data.frame()
 all_real_results <- data.frame()
+file_list <- data.frame()
 
 
 # Cross-Validation Settings ----
