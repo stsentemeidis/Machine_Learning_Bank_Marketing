@@ -168,10 +168,10 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_ranger_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_ranger_valid', suffix))[, target]))),
     'Coefficients' = length(get(paste0('fit_ranger', suffix))$finalModel$xNames),
-    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1),
-    'File' = paste0('fit_ranger', suffix)
+    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_ranger', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
-  
+
+    
   # Generate all_real_results table with original target
   if (exists('all_real_results')){
     assign('all_real_results', rbind(all_real_results, results_title = get(paste0('real_results', suffix))), envir = .GlobalEnv)
@@ -182,7 +182,6 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
     rownames(all_real_results) <- c(rownames(all_real_results)[-length(rownames(all_real_results))], results_title)
     assign('all_real_results', all_real_results, envir = .GlobalEnv)
   }
-  
   
   # Plot ROC
   roc_ranger <- AUC::roc(as.factor(valid_set[, c(target)]), as.factor(get(paste0('submission_ranger_valid', suffix))[, target]))
@@ -208,6 +207,26 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   # cm_plot_ranger <- fourfoldplot(cm_ranger$table)
   # assign(paste0('cm_plot_ranger', suffix), cm_plot_ranger, envir = .GlobalEnv)
   # get(paste0('cm_plot_ranger', suffix))
+  
+  
+  # List of files for Dashboard
+  assign(paste0('files', suffix), as.data.frame(cbind(
+    'model_file' = paste0('fit_ranger', suffix),
+    'cm_file' = paste0('cm_ranger', suffix),
+    'roc' = paste0('roc_object_ranger', suffix),
+    'density' = paste0('density_plot_ranger', suffix)
+  )), envir = .GlobalEnv)
+  
+  if (exists('file_list')){
+    assign('file_list', rbind(file_list, 'model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  } else{
+    assign('file_list', rbind('model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  }
+  
   
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(

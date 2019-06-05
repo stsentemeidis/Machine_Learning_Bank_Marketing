@@ -169,8 +169,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_glm_valid', suffix))[, target]))),
     'Coefficients' = length(get(paste0('fit_glm', suffix))$finalModel$coefficients),
-    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_glm', suffix)), units = 'mins'), 1),
-    'File' = paste0('fit_glm', suffix)
+    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_glm', suffix)), units = 'mins'), 1)
   )), envir = .GlobalEnv)
   
   # Generate all_real_results table with original target
@@ -210,6 +209,25 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
   # assign(paste0('cm_plot_glm', suffix), cm_plot_glm, envir = .GlobalEnv)
   # get(paste0('cm_plot_glm', suffix))
 
+  # List of files for Dashboard
+  assign(paste0('files', suffix), as.data.frame(cbind(
+    'model_file' = paste0('fit_glm', suffix),
+    'cm_file' = paste0('cm_glm', suffix),
+    'roc' = paste0('roc_object_glm', suffix),
+    'density' = paste0('density_plot_glm', suffix)
+  )), envir = .GlobalEnv)
+
+    if (exists('file_list')){
+    assign('file_list', rbind(file_list, 'model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  } else{
+    assign('file_list', rbind('model_file' = get(paste0('files', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(rownames(file_list)[-length(rownames(file_list))], results_title)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  }
+  
+  
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(
       difftime(Sys.time(), start_time, units = 'mins'), 1
