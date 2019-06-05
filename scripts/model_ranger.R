@@ -148,7 +148,7 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
     height = 1000
   )
   p <- plot(varImp(get(paste0('fit_ranger', suffix))), top = 30)
-  p
+  print(p)
   dev.off()
   
   # Predicting against Test Set
@@ -220,7 +220,7 @@ pipeline_ranger <- function(target, train_set, valid_set, test_set,
   # get(paste0('density_plot_ranger', suffix))
   
   # Confusion Matrix
-  assign(paste0('cm_ranger', suffix), confusionMatrix(as.factor(get(paste0('submission_ranger_valid', suffix))[, target]), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  assign(paste0('cm_ranger', suffix), confusionMatrix(data = as.factor(get(paste0('submission_ranger_valid', suffix))[, target]),reference =  as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
   # cm_plot_ranger <- fourfoldplot(cm_ranger$table)
   # assign(paste0('cm_plot_ranger', suffix), cm_plot_ranger, envir = .GlobalEnv)
   # get(paste0('cm_plot_ranger', suffix))

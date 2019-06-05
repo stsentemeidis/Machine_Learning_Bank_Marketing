@@ -150,7 +150,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     height = 1000
   )
   p <- plot(varImp(get(paste0('fit_xgbTree', suffix))), top = 30)
-  p
+  print(p)
   dev.off()
   
   # Predicting against Test Set

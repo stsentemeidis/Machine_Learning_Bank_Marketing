@@ -311,8 +311,6 @@ to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
   kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
 ```
 
-
-
 ``` {r Feature Binning Results, echo=FALSE, message = FALSE, fig.align = 'center'}
 to_display <-
   all_real_results[rownames(all_real_results) %in% c(
@@ -343,7 +341,6 @@ to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
   ) %>%
   kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
 ```
-
 
 </br>
 
@@ -390,6 +387,10 @@ kable(
 ```
 
 
+## Cross-Validation Strategy  
+
+To validate the stability of our models, we will apply a 10-fold cross-validation, repeated 3 times.   
+(*Note: for the stacking that is explained in the following part of the report we use another, more extensive cross validation approach*)
 
 </br>
 
@@ -425,16 +426,94 @@ to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
   kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
 ```
 
-
-
 </br>
+
+***
+
+## Feature Engineering
+
+### A. Clusters
+
+The first step of the Feature Engineering process is to create a new feature based on **clustering method**. First of all, we select the variable describing the clients: `age`, `job`, `mar`, `edu`, `def`, `bal`, `hou`, `loa`. These will be the clustering variables. Since we are using a **K-means** algorithm, we first define the optimal number of clusters. With K-means, **9 clusters** have been created and added to the dataframe.
+
+With these new features, we train over the 3 models that we used as our baseline and compare the results with the previous ones.    
+
+### B. Binning
+
+The next Feature Engineering step is **binning** some of the numerical variables (`age`, `balance`, `duration` and `campaign`) following to their quantiles. **Quantile** binning aims to assign the same number of observations to each bin. In the following steps we try binning with various numbers of quantiles:   
+   
+*  3 bins (dividing the data in 3 quantiles of approx **33%** each)    
+*  4 bins (quartiles of **25%**)    
+*  5 bins (quantiles of **20%**)   
+* 10 bins (quantiles of **10%**)   
+
+The clusters now being found based on Train Set A, can be associated to the points of Train Set B. 
+
+After the binning, we will **one-hot-encode** the categorical variables generated. 
+
+</br> 
+
+
+***
+
+## Feature Selection with Lasso and RFE  
+
+After doing all the necessary **feature pre processing**,  **feature engineering** and developing our initial **models**, it is about time to start experimenting with some **feature selection methodologies**. In our case we follow the below two methods:    
+
+*  Feature Selection using **Lasso Logistic Regression**.   
+*  Feature Selection with **Recursive Feature Elimination**.    
+
+Going deeper in the process, we first take the variables that the *lasso* regression gives us, in order to deal with the problem of multicollinearity as well. In particular, we started our process with **146** variables and the algorithm ended up choosing  **82** of them as important. As a following up step, we apply **RFE**, using *random forest* functions and a cross validation methodology, on the variables given by the lasso regression to get another subset of the important variables, based now on a *tree* method (RandomForest) and we ended up with **21** variables. The justification behind the decision for 21 variables is the plot below that came up as an outcome of the RFE approach.
+ 
+</br>
+
+***
+
+## Tuning  
+
+Now that we have the most efficient set of variables according to our *Feature Selection* approach, we remodel on these set of variables, using once more our 3 main algorithms: **Logistic Regressio**, **Random Forest** and **XGBoost**. However, at this stage in order to improve our results, we apply to each one of the algorithms an extensive **Grid Search** on the parameters that can be tuned and might affect our performance. More in detail we found the below mentioned optimal paramaters for *XGBoost* and *Random Forest*:    
+
+*   **XGBoost**   
+   *  max_depth = 6   
+   *  gamma = 0     
+   *  eta = 0.05   
+   *  colsample_bytree = 1    
+   *  min_child_weight = 3   
+   *  subsample = 1   
+   
+*   **Random Forest**    
+   *  mtry = 4    
+   *  splitrule = gini    
+   *  min.node.size = 9
+
+
+## Stacking   
+
+At this stage we have optimized our *variable set* and we have tuned our algorithms through a *Grid Search*. There is another option that we want to try and it is the **stacking models**.  As an initial step to decide whether stacking would make sense or not, we gather all our previous predictions and we plot a *correlation matrix*. The reason behind this, is the fact that if our predictions are *uncorrelated* between each other or at least have low correlation, then the models that generate them are capturing *different aspects* of the validation set, so it makes sense to combine them through a stacking approach. Based on the matrix below, the models that seem better to combine are the ones that generated the predictions based on the **binning** feature engineering step, as the correlation between them is around 50%. However, in order to have a more complete modelling approach we want to stack all the possible combinations and check their performance immediately after. More in detail we follow the below mentioned process:    
+
+*  We create the below mentioned *stacking categories*:   
+  *  Baseline modelling    
+  *  Clustering modelling (FE1)   
+  *  Binning modelling (FE2)
+  *  RFE - Tuning modelling   
+         
+*  For each of the categories we stack the corresponding models with *3 different algorithms*:    
+  *  **Logistic Regression**    
+  *  **XGBoost**     
+  *  **Random Forest**
+ 
+<br>
 
 ***
 
 ## Final Model  
 
-The best model for...  
+Based on the table shown below, in which we gathered all the necessary metrics to compare our models we decide to go with the **Ranger (RandomForest) algorithm trained on the set of variables that include the Binning** step of the Feature Engineering process and is the one that we choose to create our final submission. The metric that was required is the `Sensitivity`, and was the main driver of our decision.  As a closing observation, we can notice that our models are really good in predicting the **No** target variable as we manage to achieve a high *Precision*, but they have harder times *(comparing to the NOs)* adjusting their performance on the **Yes** variable in which they perform well, at around 87% of `Recall`. We can detect that through the various confusion matrices, in which the **True Negative** value is pretty high (thing that justifies the above mentioned observation).     
 
+The overall objective of the model is to identify customers who are responsive to a campaign and will eventually purchase the product. Though the final model does feature high sensitivity (True positive rate), it also has relatively low specificity (True negative rate). This implies a lot of customers targeted by the campaign may ultimately end up rejecting the offer. Ultimately, the trade-off stands between the cost of targeting the client with the campaign, and the increased revenue from capturing the client. In this particular case, one can assume the cost of running the campaign is only a small fraction of the **Customer Life-time Value**. Therefore, it makes sense to provide **an aggressive rather than conservative model**, since the cost of the campaign may only involve customer service labor at relatively low wages. In other settings where the cost of a false positive is higher relatively to the benefit of the true positive, a more conservative option should be adopted.   
+   
+*   Among those that we don't call: all are not responsive anyways
+*   But among those we don't call: we have a lot of no's
 
 <iframe src ="http://ashomah.shinyapps.io/model_dash" height=900px width=100% position="center" frameborder="0" />
 
@@ -442,7 +521,6 @@ The best model for...
 <br><br>
 
 ***
-
 ###### *Nayla Fakhoury | Martin Hofbauer | Andres Llerena | Francesca Manoni | Paul Jacques-Mignault | Ashley O'Mahony | Stavros Tsentemeidis*
 ###### *O17 (Group G) | Master in Big Data and Business Analytics | Oct 2018 Intake | IE School of Human Sciences and Technology*
 

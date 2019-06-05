@@ -77,6 +77,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
          predict(get(paste0('fit_glm', suffix)), valid_set, type = 'prob'), envir = .GlobalEnv)
   assign(paste0('pred_glm_prob', suffix), get(paste0('pred_glm', suffix)), envir = .GlobalEnv)
   assign(paste0('pred_glm', suffix), get(paste0('pred_glm_prob', suffix))$Yes, envir = .GlobalEnv)
+
   assign(paste0('pred_glm', suffix), ifelse(get(paste0('pred_glm', suffix)) > 0.5, no = 0, yes = 1), envir = .GlobalEnv)
   
   # Storing Sensitivity for different thresholds
@@ -86,7 +87,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     temp_cols <- cbind(temp_cols, paste0('t_', format(t, nsmall=2)))
   }
   colnames(sens_temp) <- temp_cols
-  
+
   valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
 
   for (t in seq(from = 0.05, to = 1, by = 0.05)){
@@ -150,7 +151,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     height = 1000
   )
   p <- plot(varImp(get(paste0('fit_glm', suffix))), top = 30)
-  p
+  print(p)
   dev.off()
   
   # Predicting against Test Set
