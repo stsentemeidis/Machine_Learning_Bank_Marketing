@@ -190,7 +190,11 @@ the customers.
     
       - **`duration`** of the call  
         Last phone call duration in seconds. The average call lasts
-        around 4 minutes. However, the longest call lasts 1.4 hours.
+        around 4 minutes. However, the longest call lasts 1.4 hours.  
+        Using `duration` would make our model deployable, but we decided
+        to use it for the sake of the project. However, if we would
+        ignore it, we would try developing a model that will actually be
+        able to predict the time of the call based on the other data.
     
       - **`campaign`**  
         Number of times the customer was contacted *during* this

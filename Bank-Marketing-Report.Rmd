@@ -182,7 +182,8 @@ The features of the dataset provide different type of information about the cust
   This indicates on which month the customer was contacted. May seems to be the peak month with `r format(length(bank_train[bank_train$month == 'may', 'month'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the calls followed by June, July, and August.  
 
   * **`duration`** of the call  
-  Last phone call duration in seconds. The average call lasts around `r format(mean(bank_train$duration)/60, digits=0, nsmall=0)` minutes. However, the longest call lasts `r format(max(bank_train$duration)/60/60, digits=1, nsmall=1)` hours.
+  Last phone call duration in seconds. The average call lasts around `r format(mean(bank_train$duration)/60, digits=0, nsmall=0)` minutes. However, the longest call lasts `r format(max(bank_train$duration)/60/60, digits=1, nsmall=1)` hours.  
+  Using `duration` would make our model deployable, but we decided to use it for the sake of the project. However, if we would ignore it, we would try developing a model that will actually be able to predict the time of the call based on the other data.  
 
   * **`campaign`**  
   Number of times the customer was contacted *during* this campaign. Customers can have been contacted up to `r max(bank_train$campaign)` times. Around `r format(length(bank_train[bank_train$campaign <= 2, 'campaign'])/nrow(bank_train)*100, digits=0, nsmall=0)`% were contacted twice or less.  

@@ -624,7 +624,8 @@ This indicates on which day of the month the customer was contacted.</p></li>
 <li><p><strong><code>month</code></strong><br />
 This indicates on which month the customer was contacted. May seems to be the peak month with 31% of the calls followed by June, July, and August.</p></li>
 <li><p><strong><code>duration</code></strong> of the call<br />
-Last phone call duration in seconds. The average call lasts around 4 minutes. However, the longest call lasts 1.4 hours.</p></li>
+Last phone call duration in seconds. The average call lasts around 4 minutes. However, the longest call lasts 1.4 hours.<br />
+Using <code>duration</code> would make our model deployable, but we decided to use it for the sake of the project. However, if we would ignore it, we would try developing a model that will actually be able to predict the time of the call based on the other data.</p></li>
 <li><p><strong><code>campaign</code></strong><br />
 Number of times the customer was contacted <em>during</em> this campaign. Customers can have been contacted up to 63 times. Around 66% were contacted twice or less.</p></li>
 <li><p><strong><code>pdays</code></strong><br />
