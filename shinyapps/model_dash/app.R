@@ -44,7 +44,8 @@ ui <- dashboardPage(skin = 'black',
                         selectInput(
                             inputId = 'model',
                             label = 'Model',
-                            choices = rownames(results)
+                            choices = rownames(results),
+                            selected = 'Ranger FE2 Binning'
                         )
                     ),
                     dashboardBody(
@@ -54,13 +55,15 @@ ui <- dashboardPage(skin = 'black',
                             valueBoxOutput("accuracy"),
                             valueBoxOutput("precision"),
                             valueBoxOutput("recall"),
-                            valueBoxOutput("f1")
+                            valueBoxOutput("f1"),
+                            valueBoxOutput("coef")
                         ),
                         
                         fluidRow(
                             box(title = 'Confusion Matrix',
                                 status = 'info',
                                 plotOutput('conf_mat', height = 250)),
+                            
                             box(title = 'ROC Curve',
                                 status = 'info',
                                 plotOutput('roc', height = 250))
@@ -68,7 +71,8 @@ ui <- dashboardPage(skin = 'black',
                         fluidRow(
                             box(title = 'Density Plot',
                                 status = 'info',
-                                plotOutput('dens_plot', width = 12)
+                                plotOutput('dens_plot')
+                                , width = 12
                             )
                         )
                     )
@@ -103,16 +107,16 @@ server <- function(input, output) {
         valueBox(
             value = round(results[rownames(results) == input$model, 'Precision'], 5),
             subtitle = "Precision",
-            color = 'yellow',
+            color = 'teal',
             icon = icon("crosshairs")
         )
     })
     
     output$recall <- renderValueBox({
         valueBox(
-            value = round(results[rownames(results) == input$model, 'Recall'], 5),
-            subtitle = "Recall",
-            color = 'yellow',
+            value = round(results[rownames(results) == input$model, 'Specificity'], 5),
+            subtitle = "Specificity",
+            color = 'teal',
             icon = icon("angle-double-left")
         )
     })
@@ -121,8 +125,17 @@ server <- function(input, output) {
         valueBox(
             value = round(results[rownames(results) == input$model, 'F1 Score'], 5),
             subtitle = "F1 Score",
-            color = 'yellow',
+            color = 'teal',
             icon = icon("flag-checkered")
+        )
+    })
+    
+    output$coef <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'Coefficients'], 5),
+            subtitle = "Coefficients",
+            color = 'teal',
+            icon = icon("calculator")
         )
     })
     
