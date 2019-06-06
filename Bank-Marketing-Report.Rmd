@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r Load Libraries, echo = FALSE, include = FALSE}
 source('scripts/install_packages.R')
-
+source('scripts/fct_plot_correlation.R')
 if (is.null(webshot:::find_phantom())) {
   webshot::install_phantomjs()
 }
@@ -65,17 +65,17 @@ This project aims to predict if a customer will subscribe to a bank term deposit
 
 ## Packages  
 
-<span style="color:red">This analysis requires these R packages:</span>  
+This analysis requires these R packages:  
 
 * Data Manipulation: `data.table`, `dplyr`, `tibble`, `tidyr`  
     
-* Plotting: `corrplot`, `GGally`, `ggmap`, `ggplot2`, `grid`, `gridExtra`  
+* Plotting: `corrplot`, `GGally`, `ggmap`, `ggplot2`, `grid`, `gridExtra`, `ggthemes`, `tufte`  
     
-* Machine Learning: `caret`, `dbscan`, `glmnet`, `leaderCluster`, `MLmetrics`, `ranger`, `xgboost`  
+* Machine Learning: `AUC`, `caret`, `caretEnsemble`, `flexclust`, `glmnet`, `MLmetrics`, `pROC`, `ranger`, `xgboost`  
 
-* Multithreading: `doMC`, `doParallel`, `factoextra`, `foreach`, `parallel`  
+* Multithreading: `doParallel`, `factoextra`, `foreach`, `parallel`  
 
-* Reporting: `kableExtra`, `knitr`, `RColorBrewer`, `shiny`, and... `beepr`.  
+* Reporting: `kableExtra`, `knitr`, `RColorBrewer`, `rsconnect`, `shiny`, `shinydashboard`, and... `beepr`.  
 
 These packages are installed and loaded if necessary by the main script.
 
@@ -130,7 +130,9 @@ cat(str_test, sep='\n')
 
 ## Exploratory Data Analysis  
 
-The target of this analysis is the variable `y`. This boolean indicates whether the customer has acquiered a bank term deposit account. With `r format(length(bank_train[bank_train$y == 'No', 'y'])/nrow(bank_train)*100, nsmall = 1, digits=2)`% of the customers having subscribed to this product, we can say that our Train set is slightly unbalanced. We might want to try rebalancing our dataset later in this analysis, to ensure our model is performing properly for unknown data.  
+The target of this analysis is the variable `y`. This boolean indicates whether the customer has acquiered a bank term deposit account. With `r format(length(bank_train[bank_train$y == 'No', 'y'])/nrow(bank_train)*100, nsmall = 1, digits=2)`% of the customers not having subscribed to this product, we can say that our Train set is slightly unbalanced. We might want to try rebalancing our dataset later in this analysis, to ensure our model is performing properly for unknown data.  
+
+</br> 
 
 The features of the dataset provide different type of information about the customers.  
 
@@ -139,7 +141,7 @@ The features of the dataset provide different type of information about the cust
 * Variables giving **personal information** of the customers:  
 
   * **`age`** of the customer  
-  Customers are between `r min(bank_train$age)` and `r max(bank_train$age)` years old, with a mean of `r mean(bank_train$age)` and a median of `r median(bank_train$age)`. The inter-quartile range is between `r quantile(bank_train$age, 0.25)` and `r quantile(bank_train$age, 0.75)`. We can also notice the presence of some outliers.  
+  Customers are between `r min(bank_train$age)` and `r max(bank_train$age)` years old, with a mean of `r round(mean(bank_train$age), 0)` and a median of `r median(bank_train$age)`. The inter-quartile range is between `r quantile(bank_train$age, 0.25)` and `r quantile(bank_train$age, 0.75)`. We can also notice the presence of some outliers.  
 
   * **`job`** category of the customer  
   There are `r length(unique(bank_train$job))` categories of jobs with more than half belonging to `blue-collar`, `management` and `technicians`, followed by admin and services. Retired candidates form `r format(length(bank_train[bank_train$job == 'retired', 'job'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the dataset, self-emplyed and entrepreneur around 6% and unemployed, housemaid and students each around 2%. The candidate with unknow jobs form less than 1%.
@@ -180,7 +182,8 @@ The features of the dataset provide different type of information about the cust
   This indicates on which month the customer was contacted. May seems to be the peak month with `r format(length(bank_train[bank_train$month == 'may', 'month'])/nrow(bank_train)*100, digits=0, nsmall=0)`% of the calls followed by June, July, and August.  
 
   * **`duration`** of the call  
-  Last phone call duration in seconds. The average call lasts around `r format(mean(bank_train$duration)/60, digits=0, nsmall=0)` minutes. However, the longest call lasts `r format(max(bank_train$duration)/60/60, digits=1, nsmall=1)` hours.
+  Last phone call duration in seconds. The average call lasts around `r format(mean(bank_train$duration)/60, digits=0, nsmall=0)` minutes. However, the longest call lasts `r format(max(bank_train$duration)/60/60, digits=1, nsmall=1)` hours.  
+  Using `duration` would make our model deployable, but we decided to use it for the sake of the project. However, if we would ignore it, we would try developing a model that will actually be able to predict the time of the call based on the other data.  
 
   * **`campaign`**  
   Number of times the customer was contacted *during* this campaign. Customers can have been contacted up to `r max(bank_train$campaign)` times. Around `r format(length(bank_train[bank_train$campaign <= 2, 'campaign'])/nrow(bank_train)*100, digits=0, nsmall=0)`% were contacted twice or less.  
@@ -196,11 +199,163 @@ The features of the dataset provide different type of information about the cust
 
 </br>
 
+``` {r Shiny App Code, echo = TRUE, eval = FALSE}
+###
+### THIS APP ALLOW TO DISPLAY RELEVANT PLOTS FOR THE DATASET
+###
+
+
+# Load Packages
+library('ggthemes')
+library('ggplot2')
+library('plyr')
+library('grid')
+library('gridExtra')
+library('shiny')
+library('shinyjs')
+
+# Load Data
+df <- readRDS('data/bank_train.rds')
+
+for (i in c('age', 'balance', 'day', 'duration', 'pdays')){
+    df[, i] <- as.numeric(df[ ,i])
+}
+
+for (i in c('job', 'marital', 'education', 'previous', 'campaign', 'default', 'housing', 'loan', 'contact', 'month', 'poutcome', 'y')){
+    df[, i] <- as.factor(df[ ,i])
+}
+
+
+# Define UI for application
+ui <- fluidPage(
+    wellPanel(
+        selectInput(
+            inputId = 'feature',
+            label = 'Feature',
+            choices = sort(names(df)),
+            selected = 'age'
+        ),
+        textOutput('class_feat')
+    ),
+    
+    conditionalPanel("output.class_feat == 'factor'",
+                     plotOutput("fact_plot_1", height = 200)),
+    conditionalPanel("output.class_feat == 'factor'",
+                     plotOutput("fact_plot_2", height = 200)),
+    conditionalPanel("output.class_feat != 'factor'",
+                     plotOutput("num_plot_1", height = 200)),
+    conditionalPanel("output.class_feat != 'factor'",
+                     plotOutput("num_plot_2", height = 200)),
+    conditionalPanel("output.class_feat != 'factor'",
+                     plotOutput("num_plot_3", height = 200))
+)
+
+# Define server logic
+server <- function(input, output) {
+    
+    output$class_feat <- reactive({
+        class_feat <- class(df[, input$feature])
+    })
+    
+    
+    output$fact_plot_1 <- renderPlot({
+        if (class(df[, input$feature]) == 'factor'){
+            ggplot(data = df, aes(x = df[, input$feature])) +
+            geom_bar(color = 'darkcyan', fill = 'darkcyan', alpha = 0.4) +
+            theme(axis.text.x=element_text(size=10, angle=90,hjust=0.95,vjust=0.2))+
+            xlab(df[, input$feature])+
+            ylab("Percent")+
+            theme_tufte(base_size = 5, ticks=F)+
+            theme(plot.margin = unit(c(10,10,10,10),'pt'),
+                  axis.title=element_blank(),
+                  axis.text = element_text(size = 10, family = 'Helvetica'),
+                  axis.text.x = element_text(hjust = 1, size = 10, family = 'Helvetica', angle = 45),
+                  legend.position = 'None')
+        }
+    })
+    
+    output$fact_plot_2 <- renderPlot({
+        if (class(df[, input$feature]) == 'factor'){
+            mytable <- table(df[, input$feature], df$y)
+            tab <- as.data.frame(prop.table(mytable, 2))
+            colnames(tab) <-  c('var', "y", "perc")
+
+        ggplot(data = tab, aes(x = var, y = perc)) +
+            geom_bar(aes(fill = y),stat = 'identity', position = 'dodge', alpha = 2/3) +
+            theme(axis.text.x=element_text(size=10, angle=90,hjust=0.95,vjust=0.2))+
+            xlab(df[, input$feature])+
+            ylab("Percent")+
+            theme_tufte(base_size = 5, ticks=F)+
+            theme(plot.margin = unit(c(10,10,10,10),'pt'),
+                  axis.title=element_blank(),
+                  axis.text = element_text(size = 10, family = 'Helvetica'),
+                  axis.text.x = element_text(hjust = 1, size = 10, family = 'Helvetica', angle = 45),
+                  legend.position = 'None')
+        }
+    })
+    
+    output$num_plot_1 <- renderPlot({
+        if (class(df[, input$feature]) != 'factor'){
+            ggplot(df,
+               aes(x = df[, input$feature])) +
+            geom_density(color = 'darkcyan', fill = 'darkcyan', alpha = 0.4) +
+            geom_vline(aes(xintercept=median(df[, input$feature])),
+                       color="darkcyan", linetype="dashed", size=1) +
+            theme_minimal() +
+            theme(panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank())+
+            labs(x = paste0(toupper(substr(input$feature, 1, 1)), tolower(substr(
+                input$feature, 2, nchar(input$feature)))),
+                y = 'Density')
+        }
+    })
+    
+    output$num_plot_2 <- renderPlot({
+        if (class(df[, input$feature]) != 'factor'){
+            ggplot(df, aes(y=df[, input$feature])) +
+            geom_boxplot(fill = "darkcyan", color = 'darkcyan', outlier.colour = 'darkcyan', alpha=0.4)+
+            coord_flip()+
+            theme_tufte(base_size = 5, ticks=F)+
+            theme(plot.margin = unit(c(10,10,10,10),'pt'),
+                  axis.title=element_blank(),
+                  axis.text = element_text(size = 10, family = 'Helvetica'),
+                  axis.text.x = element_text(hjust = 1, size = 10, family = 'Helvetica'),
+                  legend.position = 'None')    +
+                labs(x = paste0(toupper(substr(input$feature, 1, 1)), tolower(substr(
+                    input$feature, 2, nchar(input$feature)))))
+            
+        }
+        })
+    
+    output$num_plot_3 <- renderPlot({
+        if (class(df[, input$feature]) != 'factor'){
+            # mu <- ddply(df, "y", summarise, grp.median=median(df[, input$feature]))
+        ggplot(data = df, aes(x = df[, input$feature], color = y, group = y, fill = y)) + 
+            geom_density(alpha=0.4) +
+            # geom_vline(data=df, aes(xintercept=median(df[df$y == 1, input$feature])), linetype = "dashed", size = 1)+
+            theme_minimal()+
+            theme(panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank(), 
+                  panel.border = element_blank()) + 
+            labs(x = paste0(toupper(substr(input$feature, 1, 1)), tolower(substr(
+                input$feature, 2, nchar(input$feature)))),
+                y = 'Density')
+        }
+        })
+    
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server, options = list(height = 800))
+
+```
+
 <iframe src ="http://ashomah.shinyapps.io/plot_eda" height=800px width=100% position="center" frameborder="0" />
 
 </br>
 
-A quick look at the Test Set shows that the variables follow almost similar distriutions.  
+A quick look at the Test Set shows that the variables follow almost similar distributions.  
 
 
 </br>
@@ -209,7 +364,12 @@ A quick look at the Test Set shows that the variables follow almost similar dist
 
 ## Analysis Method  
 
-![](R_Flowchart.png) 
+This flowchart describes the method we used for this analysis.
+
+![](R_Flowchart.jpeg) 
+
+</br>
+
 ``` {r Show Code Main Script, echo = TRUE, eval = FALSE, collapse = TRUE}
 ####
 #### THIS SCRIPT CALLS ALL SUB-SCRIPTS TO READ AND PREPARE THE DATASET,
@@ -405,14 +565,13 @@ invisible(
 )
 # # invisible(rmarkdown::run('Bank-Marketing-Report.Rmd'))
 
-# beep(8)
-#
-# print(paste0('[', round(
-#   difftime(Sys.time(), start_time, units = 'mins'), 1
-# ), 'm]: ',
-# 'Report generated! ---END---'))
+print(paste0('[', round(
+  difftime(Sys.time(), start_time, units = 'mins'), 1
+), 'm]: ',
+'Report generated! ---END---'))
 
 ```
+
 </br>
 
 ***
@@ -424,9 +583,9 @@ As the Test Set doesn't contain the feature `y`, it is necessary to randomly spl
 * **Train Set A**, which will be used to train our model.  
 * **Train Set B**, which will be used to test our model and validate the performance of the model.  
 
-These datasets are centered and scaled, using the `preProcess` function of the package `caret`. These transformations should improve the performance of linear models.  
+These datasets are ranged from `0` to `1`, using the `preProcess` function of the package `caret`. These transformations should improve the performance of linear models.  
 
-Categorical variables are dummified, using the `  
+Categorical variables are dummified, using the `dummyVars` function of the package `caret`.    
 
 ``` {r Show Code Data Preprocess, echo = TRUE, eval = FALSE, collapse = TRUE}
 ####
@@ -505,8 +664,9 @@ print(paste0(
 
 ## Cross-Validation Strategy  
 
-To validate the stability of our models, we will apply a 10-fold cross-validation, repeated 3 times.   
-(*Note: for the stacking that is explained in the following part of the report we use another, more extensive cross validation approach*)
+To validate the stability of our models, we will apply a 10-fold cross-validation, repeated 3 times.  
+
+(*Note: for the stacking that is explained in the following part of the report we use another, more extensive cross validation approach*)  
 
 ``` {r Show Code Cross Validation | Parameter Tuning, echo = TRUE, eval = FALSE, collapse = TRUE}
 ####
@@ -606,7 +766,11 @@ xgb_grid = expand.grid(
 
 ## Baseline  
 
-For our baseline, we used 3 algorithms.  
+For our baseline, we used 3 algorithms: **Logistic Regression**, **XGBoost** and **Ranger (Random Forest)**.  
+
+</br>
+
+If the *Accuracy* of the resulting models are similar, there is a bug difference in term of *Sensitivity*. *Ranger* has the best performance so far.  
 
 ``` {r Baseline Results, echo=FALSE, message = FALSE, fig.align = 'center'}
 to_display <-
@@ -899,30 +1063,67 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
 </br>
 
 ***
-</br>
-
-***
 
 ## Feature Engineering
 
-### A. Clusters
+### A. Clusters  
 
-The first step of the Feature Engineering process is to create a new feature based on **clustering method**. First of all, we select the variable describing the clients: `age`, `job`, `mar`, `edu`, `def`, `bal`, `hou`, `loa`. These will be the clustering variables. Since we are using a **K-means** algorithm, we first define the optimal number of clusters. With K-means, **9 clusters** have been created and added to the dataframe.
+The first step of the Feature Engineering process is to create a new feature based on **clustering method**.  
 
-With these new features, we train over the 3 models that we used as our baseline and compare the results with the previous ones.    
+First of all, we select the variable describing the clients: `age`, `job`, `marital`, `education`, `default`, `balance`, `housing`, `loan`. These will be the clustering variables. Since we are using a **K-means** algorithm, we first define the optimal number of clusters.  
 
-### B. Binning
+``` {r Code Clusters, echo = TRUE, eval = FALSE}
+####
+#### THIS SCRIPT CREATES A NEW FEATURE BASED ON CLUSTERING METHOD
+####
 
-The next Feature Engineering step is **binning** some of the numerical variables (`age`, `balance`, `duration` and `campaign`) following to their quantiles. **Quantile** binning aims to assign the same number of observations to each bin. In the following steps we try binning with various numbers of quantiles:   
-   
-*  3 bins (dividing the data in 3 quantiles of approx **33%** each)    
-*  4 bins (quartiles of **25%**)    
-*  5 bins (quantiles of **20%**)   
-* 10 bins (quantiles of **10%**)   
+# Set seed
+seed <- ifelse(exists('seed'), seed, 2019)
+set.seed(seed)
 
-The clusters now being found based on Train Set A, can be associated to the points of Train Set B. 
 
-After the binning, we will **one-hot-encode** the categorical variables generated. 
+# Select the features describing the clients
+to_cluster <- colnames(bank_train_A_proc_dum)[substr(x = colnames(bank_train_A_proc_dum), start = 1, stop = 3) %in% c('age', 'job', 'mar', 'edu', 'def', 'bal', 'hou', 'loa')]
+
+
+# Define the optimal number of clusters for K-Means
+if (calculate == TRUE){
+  opt_nb_clusters <- fviz_nbclust(bank_train_A_proc_dum[, to_cluster], kmeans, method = c("silhouette", "wss", "gap_stat"))
+  saveRDS(opt_nb_clusters, 'data_output/opt_nb_clusters.rds')
+}
+opt_nb_clusters <- readRDS('data_output/opt_nb_clusters.rds')
+k <- as.integer(opt_nb_clusters$data[opt_nb_clusters$data$y == max(opt_nb_clusters$data$y), 'clusters'])
+
+# Training Clusters ----
+if (calculate == TRUE){
+  assign(paste0('kmeans_', k), kcca(bank_train_A_proc_dum[, to_cluster], k, kccaFamily('kmeans'), save.data = TRUE))
+  assign(paste0('silhouette_', k), Silhouette(get(paste0('kmeans_', k))))
+  
+  saveRDS(get(paste0('kmeans_', k)), paste0('data_output/kmeans_', k, '.rds'))
+  saveRDS(get(paste0('silhouette_', k)), paste0('data_output/silhouette_', k, '.rds'))
+}
+
+assign(paste0('kmeans_', k), readRDS(paste0('data_output/kmeans_', k, '.rds')))
+assign(paste0('silhouette_', k), readRDS(paste0('data_output/silhouette_', k, '.rds')))
+
+
+# Predicting Clusters
+dummy_cluster <- dummyVars(formula = '~.', data = data.frame('cluster' = as.factor(predict(get(paste0('kmeans_', k))))))
+bank_train_A_FE1 <- cbind(bank_train_A_proc_dum, predict(dummy_cluster, data.frame('cluster' = as.factor(predict(get(paste0('kmeans_', k)))))))
+bank_train_B_FE1 <- cbind(bank_train_B_proc_dum, predict(dummy_cluster, data.frame('cluster' = as.factor(predict(get(paste0('kmeans_', k)), bank_train_B_proc_dum[, to_cluster])))))
+bank_test_FE1 <- cbind(bank_test_proc_dum, predict(dummy_cluster, data.frame('cluster' = as.factor(predict(get(paste0('kmeans_', k)), bank_test_proc_dum[, to_cluster])))))
+
+```
+
+``` {r Best Clusters Number, echo = FALSE, fig.align = 'center'}
+opt_nb_clusters
+```
+
+</br> 
+
+With K-means, **9 clusters** have been created and added to the dataframe.  
+
+With these new features, we train over the 3 models that we used as our baseline and compare the results with the previous ones.  
 
 ``` {r Feature Clustering Results, echo=FALSE, message = FALSE, fig.align = 'center'}
 to_display <-
@@ -955,12 +1156,167 @@ to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
   kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
 ```
 
+</br>
+
+Clustering slightly improves the results of *Logistic Regression* and *XGBoost*, but not for *Ranger*.  
+
+</br>
+
+### B. Binning
+
+The next Feature Engineering step is **binning** some of the numerical variables (`age`, `balance`, `duration` and `campaign`) following to their quantiles. **Quantile** binning aims to assign the same number of observations to each bin. In the following steps we try binning with various numbers of quantiles:   
+   
+*  3 bins (dividing the data in 3 quantiles of approx **33%** each)    
+*  4 bins (quartiles of **25%**)    
+*  5 bins (quantiles of **20%**)   
+* 10 bins (quantiles of **10%**)   
+
+The clusters now being found based on Train Set A, can be associated to the points of Train Set B. 
+
+After the binning, we will **one-hot-encode** the categorical variables generated.  
+
+``` {r Code Binning, echo = TRUE, eval = FALSE}
+####
+#### THIS SCRIPT CREATES A NEW FEATURE BASED ON QUARTILE BINNING METHOD
+####
+
+
+# Set seed
+seed <- ifelse(exists('seed'), seed, 2019)
+set.seed(seed)
+
+
+# Custom Function to bin featues:
+bin_features <- function(df, lst, cut_rate) {
+  for (i in lst) {
+    df[, paste0(i, '_bin_', cut_rate)] <- .bincode(df[, i],
+                                                   breaks = quantile(df[, i], seq(0, 1, by = 1 / cut_rate)),
+                                                   include.lowest = TRUE)
+    df[, paste0(i, '_bin_', cut_rate)] <-
+      factor(df[, paste0(i, '_bin_', cut_rate)], levels = seq(1, cut_rate))
+    # df[, i] <- NULL
+  }
+  return(df)
+}
+
+features_list <- c('age', 'balance', 'duration', 'campaign')
+
+# First: binning numerical variables in 3 bins:
+bank_train_A_FE2 <- copy(bank_train_A_FE1)
+bank_train_B_FE2 <- copy(bank_train_B_FE1)
+bank_test_FE2 <- copy(bank_test_FE1)
+bank_train_A_FE2 <- bin_features(bank_train_A_FE2, features_list, 3)
+bank_train_B_FE2 <- bin_features(bank_train_B_FE2, features_list, 3)
+bank_test_FE2 <- bin_features(bank_test_FE2, features_list, 3)
+
+# Second: binning numerical variables in 4 bins:
+bank_train_A_FE2 <- bin_features(bank_train_A_FE2, features_list, 4)
+bank_train_B_FE2 <- bin_features(bank_train_B_FE2, features_list, 4)
+bank_test_FE2 <- bin_features(bank_test_FE2, features_list, 4)
+
+# Third: binning numerical variables in 5 bins:
+bank_train_A_FE2 <- bin_features(bank_train_A_FE2, features_list, 5)
+bank_train_B_FE2 <- bin_features(bank_train_B_FE2, features_list, 5)
+bank_test_FE2 <- bin_features(bank_test_FE2, features_list, 5)
+
+# Fourth: binning numerical variables in 10 bins:
+bank_train_A_FE2 <-
+  bin_features(bank_train_A_FE2, features_list, 10)
+bank_train_B_FE2 <-
+  bin_features(bank_train_B_FE2, features_list, 10)
+bank_test_FE2 <- bin_features(bank_test_FE2, features_list, 10)
+
+
+# Dummies
+dummy_bins <-
+  dummyVars(formula = '~.', data = bank_train_A_FE2[, (substr(
+    x = colnames(bank_train_A_FE2),
+    start = nchar(colnames(bank_train_A_FE2)) - 5,
+    stop = nchar(colnames(bank_train_A_FE2)) - 2
+  ) == '_bin') |
+    (substr(
+      x = colnames(bank_train_A_FE2),
+      start = nchar(colnames(bank_train_A_FE2)) - 5,
+      stop = nchar(colnames(bank_train_A_FE2)) - 2
+    ) == 'bin_')])
+bank_train_A_FE2 <-
+  cbind(bank_train_A_FE2[, (substr(
+    x = colnames(bank_train_A_FE2),
+    start = nchar(colnames(bank_train_A_FE2)) - 5,
+    stop = nchar(colnames(bank_train_A_FE2)) - 2
+  ) != '_bin') &
+    (substr(
+      x = colnames(bank_train_A_FE2),
+      start = nchar(colnames(bank_train_A_FE2)) - 5,
+      stop = nchar(colnames(bank_train_A_FE2)) - 2
+    ) != 'bin_')],
+  predict(dummy_bins, bank_train_A_FE2[, (substr(
+    x = colnames(bank_train_A_FE2),
+    start = nchar(colnames(bank_train_A_FE2)) - 5,
+    stop = nchar(colnames(bank_train_A_FE2)) - 2
+  ) == '_bin') |
+    (substr(
+      x = colnames(bank_train_A_FE2),
+      start = nchar(colnames(bank_train_A_FE2)) - 5,
+      stop = nchar(colnames(bank_train_A_FE2)) - 2
+    ) == 'bin_')]))
+
+bank_train_B_FE2 <-
+  cbind(bank_train_B_FE2[, (substr(
+    x = colnames(bank_train_B_FE2),
+    start = nchar(colnames(bank_train_B_FE2)) - 5,
+    stop = nchar(colnames(bank_train_B_FE2)) - 2
+  ) != '_bin') &
+    (substr(
+      x = colnames(bank_train_B_FE2),
+      start = nchar(colnames(bank_train_B_FE2)) - 5,
+      stop = nchar(colnames(bank_train_B_FE2)) - 2
+    ) != 'bin_')],
+  predict(dummy_bins, bank_train_B_FE2[, (substr(
+    x = colnames(bank_train_B_FE2),
+    start = nchar(colnames(bank_train_B_FE2)) - 5,
+    stop = nchar(colnames(bank_train_B_FE2)) - 2
+  ) == '_bin') |
+    (substr(
+      x = colnames(bank_train_B_FE2),
+      start = nchar(colnames(bank_train_B_FE2)) - 5,
+      stop = nchar(colnames(bank_train_B_FE2)) - 2
+    ) == 'bin_')]))
+
+bank_test_FE2 <-
+  cbind(bank_test_FE2[, (substr(
+    x = colnames(bank_test_FE2),
+    start = nchar(colnames(bank_test_FE2)) - 5,
+    stop = nchar(colnames(bank_test_FE2)) - 2
+  ) != '_bin') &
+    (substr(
+      x = colnames(bank_test_FE2),
+      start = nchar(colnames(bank_test_FE2)) - 5,
+      stop = nchar(colnames(bank_test_FE2)) - 2
+    ) != 'bin_')],
+  predict(dummy_bins, bank_test_FE2[, (substr(
+    x = colnames(bank_test_FE2),
+    start = nchar(colnames(bank_test_FE2)) - 5,
+    stop = nchar(colnames(bank_test_FE2)) - 2
+  ) == '_bin') |
+    (substr(
+      x = colnames(bank_test_FE2),
+      start = nchar(colnames(bank_test_FE2)) - 5,
+      stop = nchar(colnames(bank_test_FE2)) - 2
+    ) == 'bin_')]))
+
+```
+
+</br>
+
+Comparing the results of the 3 algorithms with the best models we had so far. Adding Binning to *Ranger* seems to improve significantly its performance.    
+
 ``` {r Feature Binning Results, echo=FALSE, message = FALSE, fig.align = 'center'}
 to_display <-
   all_real_results[rownames(all_real_results) %in% c(
-    'Logistic Reg. baseline',
-    'XGBoost baseline',
-    'Logistic Reg. FE1 Clustering',
+    'Ranger baseline',
+    'XGBboost FE1 Clustering',
+    'Ranger FE1 Clustering',
     'Logistic Reg. FE2 Binning',
     'XGBoost FE2 Binning',
     'Ranger FE2 Binning'
@@ -993,13 +1349,12 @@ to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
 
 ## Feature Selection with Lasso and RFE  
 
-After doing all the necessary **feature pre processing**,  **feature engineering** and developing our initial **models**, it is about time to start experimenting with some **feature selection methodologies**. In our case we follow the below two methods:    
+After doing all the necessary **feature pre processing**, **feature engineering** and developing our initial **models**, it is about time to start experimenting with some **feature selection methodologies**. In our case we follow the below two methods:    
 
 *  Feature Selection using **Lasso Logistic Regression**.   
-*  Feature Selection with **Recursive Feature Elimination**.    
+*  Feature Selection with **Recursive Feature Elimination** using Random Forest functions.    
 
-Going deeper in the process, we first take the variables that the *lasso* regression gives us, in order to deal with the problem of multicollinearity as well. In particular, we started our process with **146** variables and the algorithm ended up choosing  **82** of them as important. As a following up step, we apply **RFE**, using *random forest* functions and a cross validation methodology, on the variables given by the lasso regression to get another subset of the important variables, based now on a *tree* method (RandomForest) and we ended up with **21** variables. The justification behind the decision for 21 variables is the plot below that came up as an outcome of the RFE approach.
- 
+Going deeper in the process, we first take the variables that the *lasso* regression gives us, in order to deal with the problem of multicollinearity as well. In particular, we started our process with `r length(colnames(bank_train_A_FE2))` variables and the algorithm ended up choosing `r length(varsSelected)` of them as important. `r length(varsNotSelected)` features were rejected by Lasso.
 
 ``` {r Lasso, echo=FALSE, message = FALSE, fig.height=8, fig.width=10, fig.align='center', collapse = TRUE}
 print(
@@ -1020,11 +1375,75 @@ col.names = c('Rejected Features', '', '', '', ''),
 align = 'l') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
 ```
 
-``` {r RFE Variables, echo=FALSE, message = FALSE, fig.height=8, fig.width=10, fig.align='center', collapse = TRUE}
+``` {r Code Lasso, echo = TRUE, eval = FALSE}
+####
+#### THIS SCRIPT SELECTS FEATURE USING A LASSO REGRESSION
+####
+
+
+# Set seed
+seed <- ifelse(exists('seed'), seed, 2019)
+set.seed(seed)
+
+# Feature Selection with Lasso Regression ----
+X <- model.matrix(y ~ ., bank_train_A_FE2)[,-1]
+y <- ifelse(bank_train_A_FE2$y == 'Yes', 1, 0)
+cv <- cv.glmnet(X, y, alpha = 1, family = 'binomial')
+lasso_glmnet <- glmnet(X, y, alpha = 1, family = 'binomial', lambda = cv$lambda.min)
+coef(lasso_glmnet)
+
+lassoVarImp <-
+  varImp(lasso_glmnet, scale = FALSE, lambda = cv$lambda.min)
+
+varsSelected    <-
+  rownames(lassoVarImp)[which(lassoVarImp$Overall != 0)]
+varsNotSelected <-
+  rownames(lassoVarImp)[which(lassoVarImp$Overall == 0)]
+
+print(
+  paste0(
+    'The Lasso Regression selected ',
+    length(varsSelected),
+    ' variables, and rejected ',
+    length(varsNotSelected),
+    ' variables.'
+  )
+)
+
+bank_train_A_lasso <-
+  bank_train_A_FE2[,!names(bank_train_A_FE2) %in% varsNotSelected]
+bank_train_B_lasso <-
+  bank_train_B_FE2[,!names(bank_train_B_FE2) %in% varsNotSelected]
+bank_test_lasso <-
+  bank_test_FE2[,!names(bank_test_FE2) %in% varsNotSelected]
+
+print(paste0( 
+  '[',
+  round(difftime(Sys.time(), start_time, units = 'mins'), 1),
+  'm]: ',
+  'Feature Selection with Lasso Regression is done!'
+))
+
+```
+
+
+</br>
+
+As a following up step, we apply **RFE**, using *Random Forest* functions and a cross validation methodology, on the variables kept by the lasso regression to get another subset of the important variables, based now on a *tree* method (RandomForest) and we ended up with `r length(var_sel_rfe$Variables)` variables. The justification behind the decision for `r length(var_sel_rfe$Variables)` variables is the plot below that came up as an outcome of the RFE approach.
+ 
+``` {r plot RFE, echo = FALSE, fig.align = 'center'} 
+ggplot(tail(varImp_rfe,50), aes(x = reorder(Variables, Importance), y = Importance)) +
+  geom_bar(stat = 'identity', color = 'darkcyan', alpha = 0.4, fill = 'darkcyan') +
+  coord_flip() +
+  theme_minimal() +
+  labs(x = '')
+```
+
+``` {r RFE Variables, echo=FALSE, message = FALSE, fig.height=8, fig.width=10, fig.align='center', collapse = TRUE, warning = FALSE}
 kable(
   data.frame(matrix(
     c(sort(as.vector(var_sel_rfe$Variables)), '', '', '', ''),
-    nrow = 6,
+    nrow = 4,
     ncol = 5,
     byrow = TRUE
   )),
@@ -1131,27 +1550,106 @@ print(
 
 ## Tuning  
 
-Now that we have the most efficient set of variables according to our *Feature Selection* approach, we remodel on these set of variables, using once more our 3 main algorithms: **Logistic Regressio**, **Random Forest** and **XGBoost**. However, at this stage in order to improve our results, we apply to each one of the algorithms an extensive **Grid Search** on the parameters that can be tuned and might affect our performance. More in detail we found the below mentioned optimal paramaters for *XGBoost* and *Random Forest*:    
+Now that we have the most efficient set of variables according to our *Feature Selection* approach, we remodel on these set of variables, using once more our 3 main algorithms: **Logistic Regression**, **Random Forest** and **XGBoost**.  
 
-*   **XGBoost**   
+However, at this stage in order to improve our results, we apply to each one of the algorithms an extensive **Grid Search** on the parameters that can be tuned and might affect our performance.  
+   
+``` {r Tuning Parameters, echo = TRUE, eval = FALSE}
+# Cross-Validation for Tuning Settings ----
+tuningControl <-
+  trainControl(
+    method = 'cv',
+    number = 10,
+    verboseIter = TRUE,
+    allowParallel = TRUE,
+    classProbs = TRUE,
+    savePredictions = TRUE
+  )
+
+print(paste0(
+  ifelse(exists('start_time'), paste0('[', round(
+    difftime(Sys.time(), start_time, units = 'mins'), 1
+  ),
+  'm]: '), ''),
+  'Tuning Control will use ',
+  tuningControl$method,
+  ' with ',
+  tuningControl$number,
+  ' folds and ',
+  tuningControl$repeats,
+  ' repeats.'
+))
+
+
+# Default tuneGrid for Random Forest ----
+ranger_grid = expand.grid(
+  mtry = c(1, 2, 3, 4, 5, 6, 7, 10),
+  splitrule = c('gini'),
+  min.node.size = c(5, 6, 7, 8, 9, 10)
+)
+
+
+# Default tuneGrid for XGBoost ----
+nrounds = 1000
+
+xgb_grid = expand.grid(
+  nrounds = seq(from = 200, to = nrounds, by = 100),
+  max_depth = c(5, 6, 7, 8, 9),
+  eta = c(0.025, 0.05, 0.1, 0.2, 0.3),
+  gamma = 0,
+  colsample_bytree = 1,
+  min_child_weight = c(2, 3, 5),
+  subsample = 1
+)
+```
+   
+</br>
+
+#### XGBoost Grid Search  
+
+``` {r XGB Tuning Plot, echo = FALSE, fig.align = 'center', fig.height=8, fig.width=10}
+plot(fit_xgbTree_Tuning)
+```
+   
+</br>
+
+#### Ranger Grid Search  
+
+``` {r Ranger Tuning Plot, echo = FALSE, fig.align = 'center', fig.height=8, fig.width=10}
+plot(fit_ranger_Tuning)
+```
+
+</br>
+
+The optimal paramaters for *XGBoost* and *Random Forest* are:    
+
+* **XGBoost**   
    *  max_depth = 6   
    *  gamma = 0     
    *  eta = 0.05   
    *  colsample_bytree = 1    
    *  min_child_weight = 3   
    *  subsample = 1   
-   
-*   **Random Forest**    
+
+</br> 
+
+* **Random Forest**    
    *  mtry = 4    
    *  splitrule = gini    
-   *  min.node.size = 9
+   *  min.node.size = 9  
+
+</br>
+
+Unfortunately, reducing the number of variables impact significantly the performance of our models.  
    
 ``` {r Feature Tuning, echo=FALSE, message = FALSE, fig.align = 'center'}
 to_display <-
   all_real_results[rownames(all_real_results) %in% c(
-    'Logistic Reg. baseline',
-    'Logistic Reg. FE1 Clustering',
-    'Logistic Reg. FE2 Binning'
+    'Ranger baseline',
+    'Ranger FE1 Clustering',
+    'Ranger FE2 Binning',
+    'XGBoost Tuning',
+    'Ranger Tuning'
   ),]
 
 to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
@@ -1174,20 +1672,36 @@ to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
   kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
 ```
 
+</br>
+
+***
+
 ## Stacking   
 
-At this stage we have optimized our *variable set* and we have tuned our algorithms through a *Grid Search*. There is another option that we want to try and it is the **stacking models**.  As an initial step to decide whether stacking would make sense or not, we gather all our previous predictions and we plot a *correlation matrix*. The reason behind this, is the fact that if our predictions are *uncorrelated* between each other or at least have low correlation, then the models that generate them are capturing *different aspects* of the validation set, so it makes sense to combine them through a stacking approach. Based on the matrix below, the models that seem better to combine are the ones that generated the predictions based on the **binning** feature engineering step, as the correlation between them is around 50%. However, in order to have a more complete modelling approach we want to stack all the possible combinations and check their performance immediately after. More in detail we follow the below mentioned process:    
+At this stage, we have optimized our *variable set* and we have tuned our algorithms through a *Grid Search*. There is another option that we want to try: **stacking models**.  
 
-*  We create the below mentioned *stacking categories*:   
-  *  Baseline modelling    
-  *  Clustering modelling (FE1)   
-  *  Binning modelling (FE2)
-  *  RFE - Tuning modelling   
-         
-*  For each of the categories we stack the corresponding models with *3 different algorithms*:    
-  *  **Logistic Regression**    
-  *  **XGBoost**     
-  *  **Random Forest**
+As an initial step to decide whether stacking would make sense or not, we gather all our previous predictions and we plot a *correlation matrix*. The reason behind this, is the fact that if our predictions are *uncorrelated* between each other or at least have low correlation, then the models that generate them are capturing *different aspects* of the validation set, so it makes sense to combine them through a stacking approach. Based on the matrix below, the models that seem better to combine are the ones that generated the predictions based on the **binning** feature engineering step, as the correlation between them is around 50%.  
+
+``` {r Correlation Matrix, echo = FALSE, eval = TRUE, fig.align = 'center', fig.height=8, fig.width=10}
+plot_correlation(pred_corr, size_p = 1, size_t = 0.8)
+```
+
+</br>
+
+However, in order to have a more complete modelling approach, we want to stack all the possible combinations and compare their performance. More in detail we follow the below mentioned process:    
+
+* We create the below mentioned *stacking categories*:   
+  * Baseline modelling    
+  * Clustering modelling (FE1)   
+  * Binning modelling (FE2)  
+  * RFE - Tuning modelling   
+
+</br>
+
+* For each of the categories we stack the corresponding models with *3 different algorithms*:    
+  * Logistic Regression    
+  * XGBoost     
+  * Random Forest  
  
 ``` {r Show Code Stacking , echo = TRUE, eval = FALSE, collapse = TRUE}
 ####
@@ -1653,20 +2167,232 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
 }
 
 ```
+
 <br>
 
 ***
 
 ## Final Model  
 
-Based on the table shown below, in which we gathered all the necessary metrics to compare our models we decide to go with the **Ranger (RandomForest) algorithm trained on the set of variables that include the Binning** step of the Feature Engineering process and is the one that we choose to create our final submission. The metric that was required is the `Sensitivity`, and was the main driver of our decision.  As a closing observation, we can notice that our models are really good in predicting the **No** target variable as we manage to achieve a high *Precision*, but they have harder times *(comparing to the NOs)* adjusting their performance on the **Yes** variable in which they perform well, at around 87% of `Recall`. We can detect that through the various confusion matrices, in which the **True Negative** value is pretty high (thing that justifies the above mentioned observation).     
+Based on the table shown below, in which we gathered all the necessary metrics to compare our models we decide to go with the **Ranger (RandomForest) algorithm trained on the set of variables that include the Binning** step of the Feature Engineering process and is the one that we choose to create our final submission.  
 
-The overall objective of the model is to identify customers who are responsive to a campaign and will eventually purchase the product. Though the final model does feature high sensitivity (True positive rate), it also has relatively low specificity (True negative rate). This implies a lot of customers targeted by the campaign may ultimately end up rejecting the offer. Ultimately, the trade-off stands between the cost of targeting the client with the campaign, and the increased revenue from capturing the client. In this particular case, one can assume the cost of running the campaign is only a small fraction of the **Customer Life-time Value**. Therefore, it makes sense to provide **an aggressive rather than conservative model**, since the cost of the campaign may only involve customer service labor at relatively low wages. In other settings where the cost of a false positive is higher relatively to the benefit of the true positive, a more conservative option should be adopted.   
+The metric that was required is the `Sensitivity`, and was the main driver of our decision. As a closing observation, we can notice that our models are really good in predicting the **No** value of target variable as we manage to achieve a high *Precision*, but they have harder times *(comparing to the NOs)* adjusting their performance on the **Yes** variable: the best model has a `Recall` value of only 86%. We can detect that through various confusion matrices, in which the **True Negative** value is pretty high (thing that justifies the above mentioned observation).     
+
+``` {r All Results, echo=FALSE, message = FALSE, fig.align = 'center'}
+to_display <-
+  all_real_results
+
+to_display[order(to_display$Sensitivity, decreasing = TRUE), ] %>%
+  rownames_to_column('Model') %>%
+  mutate(
+    Sensitivity = cell_spec(
+      format(Sensitivity, nsmall = 7),
+      color = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, 'white', 'ghostwhite'),
+      font_size = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, 12, 11),
+      background = spec_color(
+        order(Sensitivity, decreasing = TRUE),
+        option = 'D',
+        begin = 0.50,
+        end = 0.98,
+        direction = 1
+      ),
+      bold = ifelse(order(Sensitivity, decreasing = TRUE) <= 3, TRUE, FALSE)
+    )
+  ) %>%
+  kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed'))
+```
+
+</br>
+
+The overall objective of the model is to identify customers who are responsive to a campaign and will eventually purchase the product. Though the final model does feature high sensitivity (True Positive rate), it also has relatively low specificity (True Negative rate). This implies a lot of customers targeted by the campaign may ultimately end up rejecting the offer. Ultimately, the trade-off stands between the cost of targeting the client with the campaign, and the increased revenue from capturing the client.  
+
+In this particular case, one can assume the cost of running the campaign is only a small fraction of the **Customer Life-time Value**. Therefore, it makes sense to provide **an aggressive rather than conservative model**, since the cost of the campaign may only involve customer service labor at relatively low wages. In other settings where the cost of a false positive is higher relatively to the benefit of the true positive, a more conservative option should be adopted.   
    
-*   Among those that we don't call: all are not responsive anyways
-*   But among those we don't call: we have a lot of no's
+* Among those that we don't call: all are not responsive anyways  
+* But among those we don't call: we have a lot of No's  
 
-<iframe src ="http://ashomah.shinyapps.io/model_dash" height=900px width=100% position="center" frameborder="0" />
+This table lists the Sensitivities we can achieve with each model by tuning the threshold `t`, highlighting the Sensitivities above `0.9`.  
+
+``` {r Threshold Table, echo = FALSE, fig.align = 'center'}
+sensitivity_thresholds[, -ncol(sensitivity_thresholds)] %>%
+  rownames_to_column('Model') %>%
+  replace(is.na(.), 0) %>%
+  mutate_if(is.numeric, round, 4) %>%
+  mutate_if(is.numeric, function(x) {cell_spec(x, color = ifelse(x > 0.9, 'white', 'black'), background = ifelse(x > 0.9, 'darkgreen', 'white'))}) %>%
+  kable(escape = FALSE, align = 'r') %>% kable_styling(bootstrap_options = c('hover', 'condensed')) %>%
+  scroll_box(width = '100%', height = '100%', fixed_thead = T)
+```
+
+</br>
+
+#### Bonus  
+
+To display the model results, we also set up a dashboard using `shinydashboard`.  
+
+``` {r Dashboard Code, echo = TRUE, eval = FALSE}
+###
+### THIS APP ALLOW TO DISPLAY A DASHBOARD FOR MODELS
+###
+
+
+# Load Packages
+library('shiny')
+library('shinydashboard')
+library('ggplot2')
+library('caret')
+library('pROC')
+library('ggthemes')
+library('corrplot')
+library('glmnet')
+library('MLmetrics')
+library('ranger')
+library('xgboost')
+library('factoextra')
+library('kableExtra')
+library('RColorBrewer')
+library('tufte')
+library('flexclust')
+library('factoextra')
+library('AUC')
+
+
+# Load Data
+results <- readRDS('data/all_real_results.rds')
+file_list <- readRDS('data/file_list.rds')
+
+for (m in seq(nrow(file_list))){
+    # assign(paste0(file_list[m, 'model_file']), readRDS(file = paste0('data/', file_list[m, 'model_file'], '.rds')))
+    assign(paste0(file_list[m, 'cm_file']), readRDS(file = paste0('data/', file_list[m, 'cm_file'], '.rds')))
+    assign(paste0(file_list[m, 'roc']), readRDS(file = paste0('data/', file_list[m, 'roc'], '.rds')))
+    assign(paste0(file_list[m, 'density']), readRDS(file = paste0('data/', file_list[m, 'density'], '.rds')))
+}
+
+
+
+# Define UI for application
+ui <- dashboardPage(skin = 'black',
+                    dashboardHeader(title = "Models Dashboard"),
+                    dashboardSidebar(
+                        selectInput(
+                            inputId = 'model',
+                            label = 'Model',
+                            choices = rownames(results)
+                        )
+                    ),
+                    dashboardBody(
+                        
+                        fluidRow(
+                            valueBoxOutput("sensibility"),
+                            valueBoxOutput("accuracy"),
+                            valueBoxOutput("precision"),
+                            valueBoxOutput("recall"),
+                            valueBoxOutput("f1"),
+                            valueBoxOutput("coef")
+                        ),
+                        
+                        fluidRow(
+                            box(title = 'Confusion Matrix',
+                                status = 'info',
+                                plotOutput('conf_mat', height = 250)),
+                            
+                            box(title = 'ROC Curve',
+                                status = 'info',
+                                plotOutput('roc', height = 250))
+                        ),
+                        fluidRow(
+                            box(title = 'Density Plot',
+                                status = 'info',
+                                plotOutput('dens_plot')
+                                , width = 12
+                            )
+                        )
+                    )
+)
+
+# Define server logic
+server <- function(input, output) {
+    
+    output$model_file <- reactive({
+        results[rownames(results) == input$model, 'File']
+    })
+    
+    output$sensibility <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'Sensitivity'], 5),
+            subtitle = "Sensitivity",
+            color = 'yellow',
+            icon = icon("sad-cry")
+        )
+    })
+    
+    output$accuracy <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'Accuracy'], 5),
+            subtitle = "Accuracy",
+            color = 'teal',
+            icon = icon("expand")
+        )
+    })
+    
+    output$precision <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'Precision'], 5),
+            subtitle = "Precision",
+            color = 'teal',
+            icon = icon("crosshairs")
+        )
+    })
+    
+    output$recall <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'Specificity'], 5),
+            subtitle = "Specificity",
+            color = 'teal',
+            icon = icon("angle-double-left")
+        )
+    })
+    
+    output$f1 <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'F1 Score'], 5),
+            subtitle = "F1 Score",
+            color = 'teal',
+            icon = icon("flag-checkered")
+        )
+    })
+    
+    output$coef <- renderValueBox({
+        valueBox(
+            value = round(results[rownames(results) == input$model, 'Coefficients'], 5),
+            subtitle = "Coefficients",
+            color = 'teal',
+            icon = icon("calculator")
+        )
+    })
+    
+    output$conf_mat <- renderPlot({
+        data <- get(paste0(file_list[rownames(file_list) == input$model, 'cm_file']))
+        fourfoldplot(data$table)
+    })
+    
+    output$roc <- renderPlot({
+        data <- get(paste0(file_list[rownames(file_list) == input$model, 'roc']))
+        plot(data , lwd=4)
+    })
+    
+    output$dens_plot <- renderPlot({
+        data <- get(paste0(file_list[rownames(file_list) == input$model, 'density']))
+        data
+    })
+    
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server, options = list(height = 500))
+
+```
+
+<iframe src ="http://ashomah.shinyapps.io/model_dash" height=1100px width=100% position="center" frameborder="0" />
 
 
 <br><br>

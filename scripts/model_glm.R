@@ -114,7 +114,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
                                                y_true = valid_set[,target], positive = '1'),
                    'Precision' = Precision(y_pred = get(paste0('pred_glm', suffix)),
                                            y_true = valid_set[,target], positive = '1'),
-                   'Recall' = Recall(y_pred = get(paste0('pred_glm', suffix)),
+                   'Specificity' = Specificity(y_pred = get(paste0('pred_glm', suffix)),
                                      y_true = valid_set[,target], positive = '1'),
                    'F1 Score' = F1_Score(y_pred = get(paste0('pred_glm', suffix)),
                                          y_true = valid_set[,target], positive = '1'),
@@ -160,6 +160,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     get(paste0('pred_glm_test', suffix)) # To adjust if target is transformed
   ))
   colnames(submissions_test) <- c(target)
+  submissions_test[,target] <- ifelse(submissions_test[,target]==2,0,1)
   assign(paste0('submission_glm_test', suffix), submissions_test, envir = .GlobalEnv)
   
   # Generating submissions file
@@ -183,7 +184,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     'Accuracy' = Accuracy(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)])),
     'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
     'Precision' = Precision(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
-    'Recall' = Recall(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
+    'Specificity' = Specificity(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_glm_valid', suffix))[, target], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_glm_valid', suffix))[, target]))),
     'Coefficients' = length(get(paste0('fit_glm', suffix))$finalModel$coefficients),

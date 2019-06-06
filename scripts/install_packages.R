@@ -3,7 +3,6 @@
 ####
 
 packages_list <- c(
-  'Amelia',
   'data.table',
   'pROC',
   'ggthemes',
@@ -17,9 +16,7 @@ packages_list <- c(
   'grid',
   'gridExtra',
   'caret',
-  'dbscan',
   'glmnet',
-  'leaderCluster',
   'MLmetrics',
   'ranger',
   'xgboost',
@@ -34,7 +31,6 @@ packages_list <- c(
   'beepr',
   'tufte',
   'flexclust',
-  'factoextra',
   'caretEnsemble',
   'AUC',
   'shinydashboard',

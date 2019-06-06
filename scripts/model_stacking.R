@@ -224,7 +224,7 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
                                                y_true = valid_set[,target]),
                    'Precision' = Precision(y_pred = get(paste0('pred_glm_stack', suffix)),positive = '1',
                                            y_true = valid_set[,target]),
-                   'Recall' = Recall(y_pred = get(paste0('pred_glm_stack', suffix)),positive = '1',
+                   'Specificity' = Specificity(y_pred = get(paste0('pred_glm_stack', suffix)),positive = '1',
                                      y_true = valid_set[,target]),
                    'F1 Score' = F1_Score(y_pred = get(paste0('pred_glm_stack', suffix)),positive = '1',
                                          y_true = valid_set[,target]),
@@ -242,12 +242,12 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
                                                y_true = valid_set[,target]),
                    'Precision' = Precision(y_pred = get(paste0('pred_rf_stack', suffix)),positive = '1',
                                            y_true = valid_set[,target]),
-                   'Recall' = Recall(y_pred = get(paste0('pred_rf_stack', suffix)),positive = '1',
+                   'Specificity' = Specificity(y_pred = get(paste0('pred_rf_stack', suffix)),positive = '1',
                                      y_true = valid_set[,target]),
                    'F1 Score' = F1_Score(y_pred = get(paste0('pred_rf_stack', suffix)),positive = '1',
                                          y_true = valid_set[,target]),
                    'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_rf_stack', suffix))))),
-                   'Coefficients' = length(get(paste0('fit_stack_rf', suffix))$ens_model$finalModel$num.trees),
+                   'Coefficients' = length(get(paste0('fit_stack_rf', suffix))$ens_model$finalModel$num.independent.variables),
                    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_stack', suffix)), units = 'mins'), 1),
                    'CV | Accuracy' = mean(get(paste0('fit_stack_rf', suffix))$error[, 'Accuracy']),
                    'CV | Kappa' = mean(get(paste0('fit_stack_rf', suffix))$error[, 'Kappa']),
@@ -260,12 +260,12 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
                                                y_true = valid_set[,target]),
                    'Precision' = Precision(y_pred = get(paste0('pred_xgbTree_stack', suffix)),positive = '1',
                                            y_true = valid_set[,target]),
-                   'Recall' = Recall(y_pred = get(paste0('pred_xgbTree_stack', suffix)),positive = '1',
+                   'Specificity' = Specificity(y_pred = get(paste0('pred_xgbTree_stack', suffix)),positive = '1',
                                      y_true = valid_set[,target]),
                    'F1 Score' = F1_Score(y_pred = get(paste0('pred_xgbTree_stack', suffix)),positive = '1',
                                          y_true = valid_set[,target]),
                    'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[,target]), as.factor(get(paste0('pred_xgbTree_stack', suffix))))),
-                   'Coefficients' = length(get(paste0('fit_stack_xgbTree', suffix))$ens_model$finalModel$params$max_depth),
+                   'Coefficients' = length(get(paste0('fit_stack_xgbTree', suffix))$ens_model$finalModel$nfeatures),
                    'Train Time (min)' = round(as.numeric(get(paste0('time_fit_stack', suffix)), units = 'mins'), 1),
                    'CV | Accuracy' = mean(get(paste0('fit_stack_xgbTree', suffix))$error[, 'Accuracy']),
                    'CV | Kappa' = mean(get(paste0('fit_stack_xgbTree', suffix))$error[, 'Kappa']),
@@ -315,6 +315,9 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
   ))
   
   colnames(submissions_test) <- c('stack_glm', 'stack_rf', 'stack_xgbTree')
+  submissions_test[,'stack_glm'] <- ifelse(submissions_test[,'stack_glm']==2,0,1)
+  submissions_test[,'stack_rf'] <- ifelse(submissions_test[,'stack_rf']==2,0,1)
+  submissions_test[,'stack_xgbTree'] <- ifelse(submissions_test[,'stack_xgbTree']==2,0,1)
   assign(paste0('submission_stack_test', suffix), submissions_test, envir = .GlobalEnv)
   
   # Generating submissions file
@@ -345,7 +348,7 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
     'Accuracy' = Accuracy(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)])),
     'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
     'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
-    'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+    'Specificity' = Specificity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_glm'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_glm']))),
     'Coefficients' = length(get(paste0('fit_stack_glm', suffix))$ens_model$finalModel$coefficients),
@@ -355,20 +358,20 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
       'Accuracy' = Accuracy(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)])),
       'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
       'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
-      'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+      'Specificity' = Specificity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
       'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_rf'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
       'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_rf']))),
-      'Coefficients' = length(get(paste0('fit_stack_rf', suffix))$ens_model$finalModel$num.trees),
+      'Coefficients' = length(get(paste0('fit_stack_rf', suffix))$ens_model$finalModel$num.independent.variables),
       'Train Time (min)' = round(as.numeric(get(paste0('time_fit_stack', suffix)), units = 'mins'), 1)),
       
     cbind(
       'Accuracy' = Accuracy(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)])),
       'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
       'Precision' = Precision(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
-      'Recall' = Recall(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
+      'Specificity' = Specificity(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
       'F1 Score' = F1_Score(y_pred = get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree'], y_true = as.numeric(valid_set[, c(target)]),positive = '1'),
       'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree']))),
-      'Coefficients' = length(get(paste0('fit_stack_xgbTree', suffix))$finalModel$params$max_depth),
+      'Coefficients' = length(get(paste0('fit_stack_xgbTree', suffix))$finalModel$nfeatures),
       'Train Time (min)' = round(as.numeric(get(paste0('time_fit_stack', suffix)), units = 'mins'), 1)
         )
       )
@@ -438,21 +441,57 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
 
   
   # Confusion Matrix
-  assign(paste0('cm_glm', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_glm']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  assign(paste0('cm_stack_glm', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_glm']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
   # cm_plot_glm <- fourfoldplot(cm_glm$table)
   # assign(paste0('cm_plot_stack_glm', suffix), cm_plot_glm, envir = .GlobalEnv)
   # get(paste0('cm_plot_stack_glm', suffix))
   
-  assign(paste0('cm_glm', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_rf']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  assign(paste0('cm_stack_rf', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_rf']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
   # cm_plot_glm <- fourfoldplot(cm_glm$table)
   # assign(paste0('cm_plot_stack_rf', suffix), cm_plot_glm, envir = .GlobalEnv)
   # get(paste0('cm_plot_stack_rf', suffix))
   
-  assign(paste0('cm_glm', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
+  assign(paste0('cm_stack_xgbTree', suffix), confusionMatrix(as.factor(get(paste0('submission_stack_valid', suffix))[, 'stack_xgbTree']), as.factor(valid_set[, c(target)])), envir = .GlobalEnv)
   # cm_plot_glm <- fourfoldplot(cm_glm$table)
   # assign(paste0('cm_plot_stack_xgbTree', suffix), cm_plot_glm, envir = .GlobalEnv)
   # get(paste0('cm_plot_stack_xgbTree', suffix))
+
+  # List of files for Dashboard
+  assign(paste0('files_glm', suffix), as.data.frame(cbind(
+    'model_file' = paste0('fit_stack_glm', suffix),
+    'cm_file' = paste0('cm_stack_glm', suffix),
+    'roc' = paste0('roc_object_stack_glm', suffix),
+    'density' = paste0('density_plot_stack_glm', suffix)
+  )), envir = .GlobalEnv)
   
+  assign(paste0('files_rf', suffix), as.data.frame(cbind(
+    'model_file' = paste0('fit_stack_rf', suffix),
+    'cm_file' = paste0('cm_stack_rf', suffix),
+    'roc' = paste0('roc_object_stack_rf', suffix),
+    'density' = paste0('density_plot_stack_rf', suffix)
+  )), envir = .GlobalEnv)
+  
+  assign(paste0('files_xgbTree', suffix), as.data.frame(cbind(
+    'model_file' = paste0('fit_stack_xgbTree', suffix),
+    'cm_file' = paste0('cm_stack_xgbTree', suffix),
+    'roc' = paste0('roc_object_stack_xgbTree', suffix),
+    'density' = paste0('density_plot_stack_xgbTree', suffix)
+  )), envir = .GlobalEnv)
+  
+  if (exists('file_list')){
+    a <- rownames(file_list)
+    assign('file_list', rbind(file_list, 'model_file_1' = get(paste0('files_glm', suffix)), 'model_file_2' = get(paste0('files_rf', suffix)), 'model_file_3' = get(paste0('files_xgbTree', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(a, results_title_glm, results_title_rf, results_title_xgb)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  } else{
+    a <- rownames(file_list)
+    assign('file_list', rbind('model_file_1' = get(paste0('files_glm', suffix)), 'model_file_2' = get(paste0('files_rf', suffix)), 'model_file_3' = get(paste0('files_xgbTree', suffix))), envir = .GlobalEnv)
+    rownames(file_list) <- c(a, results_title_glm, results_title_rf, results_title_xgb)
+    assign('file_list', file_list, envir = .GlobalEnv)
+  }
+  
+  
+    
   print(paste0(
     ifelse(exists('start_time'), paste0('[', round(
       difftime(Sys.time(), start_time, units = 'mins'), 1

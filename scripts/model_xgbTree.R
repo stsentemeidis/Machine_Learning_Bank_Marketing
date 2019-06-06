@@ -113,7 +113,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
                                          y_true = valid_set[,target], positive = '1'),
              'Precision' = Precision(y_pred = get(paste0('pred_xgbTree', suffix)),
                                      y_true = valid_set[,target], positive = '1'),
-             'Recall' = Recall(y_pred = get(paste0('pred_xgbTree', suffix)),
+             'Specificity' = Specificity(y_pred = get(paste0('pred_xgbTree', suffix)),
                                y_true = valid_set[,target], positive = '1'),
              'F1 Score' = F1_Score(y_pred = get(paste0('pred_xgbTree', suffix)),
                                    y_true = valid_set[,target], positive = '1'),
@@ -142,7 +142,6 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     assign('all_results', all_results, envir = .GlobalEnv)
   }
   
-  # TO FIX - NOT SAVING PROPERLY...
   # Save Variables Importance plot
   png(
     paste0('plots/fit_xgbTree_', ifelse(is.null(suffix), NULL, paste0(substr(suffix,2, nchar(suffix)), '_')), 'varImp.png'),
@@ -160,6 +159,8 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     get(paste0('pred_xgbTree_test', suffix)) # To adjust if target is transformed
   ))
   colnames(submissions_test) <- c(target)
+  submissions_test[,target] <- ifelse(submissions_test[,target]==2,0,1)
+  
   assign(paste0('submission_xgbTree_test', suffix), submissions_test, envir = .GlobalEnv)
   
   # Generating submissions file
@@ -183,7 +184,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     'Accuracy' = Accuracy(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)])),
     'Sensitivity' = Sensitivity(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
     'Precision' = Precision(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
-    'Recall' = Recall(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
+    'Specificity' = Specificity(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
     'F1 Score' = F1_Score(y_pred = get(paste0('submission_xgbTree_valid', suffix))[, c(target)], y_true = as.numeric(valid_set[, c(target)]), positive = '1'),
     'AUC'      = AUC::auc(AUC::roc(as.numeric(valid_set[, c(target)]), as.factor(get(paste0('submission_xgbTree_valid', suffix))[, target]))),
     'Coefficients' = get(paste0('fit_xgbTree', suffix))$finalModel$nfeatures,

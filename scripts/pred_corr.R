@@ -28,4 +28,4 @@ png( 'plots/prediction_corrplot',
 plot_correlation(pred_corr, size_p = 1, size_t = 0.8)
 dev.off()
 
-assign('pred_corr', pred_corr, envir = .GlobEnv)
+assign('pred_corr', pred_corr, envir = .GlobalEnv)
