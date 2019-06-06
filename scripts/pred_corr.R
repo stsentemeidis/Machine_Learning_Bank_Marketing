@@ -27,3 +27,5 @@ png( 'plots/prediction_corrplot',
      height = 1000)
 plot_correlation(pred_corr, size_p = 1, size_t = 0.8)
 dev.off()
+
+assign('pred_corr', pred_corr, envir = .GlobEnv)

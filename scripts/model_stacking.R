@@ -155,8 +155,58 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
   assign(paste0('pred_xgbTree_stack_prob', suffix), get(paste0('pred_xgbTree_stack', suffix)), envir = .GlobalEnv)
   assign(paste0('pred_xgbTree_stack', suffix), ifelse(get(paste0('pred_xgbTree_stack', suffix)) > 0.5,yes =  1,no =  0), envir = .GlobalEnv)
   
-  # Compare Predictions and Valid Set
+  # Storing Sensitivity for different thresholds GLM
+  sens_temp <- data.frame(rbind(rep_len(0, length(seq(from = 0.05, to = 1, by = 0.05)))))
+  temp_cols <- c()
+  for (t in seq(from = 0.05, to = 1, by =0.05)){
+    temp_cols <- cbind(temp_cols, paste0('t_', format(t, nsmall=2)))
+  }
+  colnames(sens_temp) <- temp_cols
+  
   valid_set[,target] <- ifelse(valid_set[,target]=='No',0,1)
+  
+  for (t in seq(from = 0.05, to = 1, by = 0.05)){
+    assign(paste0('tres_pred_glm_stack', suffix, '_', format(t, nsmall=2)), ifelse(get(paste0('pred_glm_stack_prob', suffix)) > t, no = 0, yes = 1), envir = .GlobalEnv)
+    sens_temp[, paste0('t_', format(t, nsmall=2))] <- Sensitivity(y_pred = get(paste0('tres_pred_glm_stack', suffix, '_', format(t, nsmall=2))),
+                                                                  y_true = valid_set[,target], positive = '1')
+    
+  }  
+  assign(paste0('sens_temp_glm_stack', suffix), sens_temp, envir = .GlobalEnv)
+  
+  # Storing Sensitivity for different thresholds RANGER
+  sens_temp <- data.frame(rbind(rep_len(0, length(seq(from = 0.05, to = 1, by = 0.05)))))
+  temp_cols <- c()
+  for (t in seq(from = 0.05, to = 1, by =0.05)){
+    temp_cols <- cbind(temp_cols, paste0('t_', format(t, nsmall=2)))
+  }
+  colnames(sens_temp) <- temp_cols
+  
+  for (t in seq(from = 0.05, to = 1, by = 0.05)){
+    assign(paste0('tres_pred_rf_stack', suffix, '_', format(t, nsmall=2)), ifelse(get(paste0('pred_rf_stack_prob', suffix)) > t, no = 0, yes = 1), envir = .GlobalEnv)
+    sens_temp[, paste0('t_', format(t, nsmall=2))] <- Sensitivity(y_pred = get(paste0('tres_pred_rf_stack', suffix, '_', format(t, nsmall=2))),
+                                                                  y_true = valid_set[,target], positive = '1')
+    
+  }  
+  assign(paste0('sens_temp_rf_stack', suffix), sens_temp, envir = .GlobalEnv)
+  
+  # Storing Sensitivity for different thresholds XGBTREE
+  sens_temp <- data.frame(rbind(rep_len(0, length(seq(from = 0.05, to = 1, by = 0.05)))))
+  temp_cols <- c()
+  for (t in seq(from = 0.05, to = 1, by =0.05)){
+    temp_cols <- cbind(temp_cols, paste0('t_', format(t, nsmall=2)))
+  }
+  colnames(sens_temp) <- temp_cols
+  
+  for (t in seq(from = 0.05, to = 1, by = 0.05)){
+    assign(paste0('tres_pred_xgbTree_stack', suffix, '_', format(t, nsmall=2)), ifelse(get(paste0('pred_xgbTree_stack_prob', suffix)) > t, no = 0, yes = 1), envir = .GlobalEnv)
+    sens_temp[, paste0('t_', format(t, nsmall=2))] <- Sensitivity(y_pred = get(paste0('tres_pred_xgbTree_stack', suffix, '_', format(t, nsmall=2))),
+                                                                  y_true = valid_set[,target], positive = '1')
+    
+  }  
+  assign(paste0('sens_temp_xgbTree_stack', suffix), sens_temp, envir = .GlobalEnv)
+  
+  
+  # Compare Predictions and Valid Set
   assign(paste0('comp_stack', suffix),
          data.frame(obs = valid_set[,target],
                     pred_glm = get(paste0('pred_glm_stack', suffix)),
