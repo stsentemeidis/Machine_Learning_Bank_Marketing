@@ -142,7 +142,6 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     assign('all_results', all_results, envir = .GlobalEnv)
   }
   
-  # TO FIX - NOT SAVING PROPERLY...
   # Save Variables Importance plot
   png(
     paste0('plots/fit_xgbTree_', ifelse(is.null(suffix), NULL, paste0(substr(suffix,2, nchar(suffix)), '_')), 'varImp.png'),
@@ -160,7 +159,7 @@ pipeline_xgbTree <- function(target, train_set, valid_set, test_set,
     get(paste0('pred_xgbTree_test', suffix)) # To adjust if target is transformed
   ))
   colnames(submissions_test) <- c(target)
-  submissions_test[,target] <- ifelse(submissions_test[,target]=='No',0,1)
+  submissions_test[,target] <- ifelse(submissions_test[,target]==2,0,1)
   
   assign(paste0('submission_xgbTree_test', suffix), submissions_test, envir = .GlobalEnv)
   

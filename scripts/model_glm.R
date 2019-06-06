@@ -160,7 +160,7 @@ pipeline_glm <- function(target, train_set, valid_set, test_set,
     get(paste0('pred_glm_test', suffix)) # To adjust if target is transformed
   ))
   colnames(submissions_test) <- c(target)
-  submissions_test[,target] <- ifelse(submissions_test[,target]=='No',0,1)
+  submissions_test[,target] <- ifelse(submissions_test[,target]==2,0,1)
   assign(paste0('submission_glm_test', suffix), submissions_test, envir = .GlobalEnv)
   
   # Generating submissions file

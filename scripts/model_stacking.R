@@ -315,7 +315,9 @@ pipeline_stack <- function(target, train_set, valid_set, test_set,
   ))
   
   colnames(submissions_test) <- c('stack_glm', 'stack_rf', 'stack_xgbTree')
-  submissions_test[,target] <- ifelse(submissions_test[,target]=='No',0,1)
+  submissions_test[,'stack_glm'] <- ifelse(submissions_test[,'stack_glm']==2,0,1)
+  submissions_test[,'stack_rf'] <- ifelse(submissions_test[,'stack_rf']==2,0,1)
+  submissions_test[,'stack_xgbTree'] <- ifelse(submissions_test[,'stack_xgbTree']==2,0,1)
   assign(paste0('submission_stack_test', suffix), submissions_test, envir = .GlobalEnv)
   
   # Generating submissions file
