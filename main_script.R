@@ -133,6 +133,9 @@ pipeline_ranger(target = 'y', train_set = bank_train_A_rfe,
                  suffix = 'Tuning', calculate = FALSE, seed = seed,
                  n_cores = detectCores()-1)
 
+# Create Predictions Correlation Matrix ----
+source('scripts/pred_corr.R')
+
 # Baseline Stacking Logistic Regression | Ranger | xgbTree ----
 pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
                 valid_set = bank_train_B_proc_dum, test_set = bank_test_proc_dum,
@@ -140,21 +143,21 @@ pipeline_stack(target = 'y', train_set = bank_train_A_proc_dum,
                 suffix = 'baseline', calculate = FALSE, seed = seed,
                 n_cores = detectCores()-1)
 
-# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+# FE1 Stacking Logistic Regression | Ranger | xgbTree ----
 pipeline_stack(target = 'y', train_set = bank_train_A_FE1,
                valid_set = bank_train_B_FE1, test_set = bank_test_FE1,
                trControl = fitControl, tuneGrid = NULL,
                suffix = 'clustering', calculate = FALSE, seed = seed,
                n_cores = detectCores()-1)
 
-# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+# FE2 Stacking Logistic Regression | Ranger | xgbTree ----
 pipeline_stack(target = 'y', train_set = bank_train_A_FE2,
                valid_set = bank_train_B_FE2, test_set = bank_test_FE2,
                trControl = fitControl, tuneGrid = NULL,
                suffix = 'binning', calculate = FALSE, seed = seed,
                n_cores = detectCores()-1)
 
-# Baseline Stacking Logistic Regression | Ranger | xgbTree ----
+# RFE Stacking Logistic Regression | Ranger | xgbTree ----
 pipeline_stack(target = 'y', train_set = bank_train_A_rfe,
                valid_set = bank_train_B_rfe, test_set = bank_test_rfe,
                trControl = fitControl, tuneGrid = NULL,
@@ -163,6 +166,7 @@ pipeline_stack(target = 'y', train_set = bank_train_A_rfe,
 
 # Creating the table with the sensitivities for different thresholds
 source('scripts/sensitivity_thresholds.R')
+
 
 # Save RData for RMarkdown ----
 save(
@@ -174,6 +178,7 @@ save(
     'bank_train_A',
     'bank_train_B',
     'bank_test',
+    'bank_train_A_FE2',
     'all_results',
     'all_real_results',
     'opt_nb_clusters',
@@ -251,12 +256,16 @@ save(
     'varsSelected',
     'varsNotSelected',
     'var_sel_rfe',
-    'sensitivity_thresholds'
+    'sensitivity_thresholds',
+    'varImp_rfe',
+    'fit_xgbTree_Tuning',
+    'fit_ranger_Tuning',
+    'pred_corr'
   ),
   file = 'data_output/RMarkdown_Objects.RData'
 )
 
-save.image(file = 'data_output/ALL.RData')
+# save.image(file = 'data_output/ALL.RData')
 
 # Save files for ShinyApps
 saveRDS(bank_train, file = 'shinyapps/plot_eda/data/bank_train.rds')
